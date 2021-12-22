@@ -65,10 +65,6 @@ bulletGUI = [
     pygame.image.load("images/gui/bullet/bullet5.png"),
 ]
 
-grenadeGUI = [
-    pygame.image.load("images/gui/grenade/grenade.png"),
-]
-
 # menu animation images
 menuBackgroundImage = pygame.image.load("images/backgrounds/background.jpg")
 menuBackgroundImage = pygame.transform.scale(menuBackgroundImage, (WIDTH, HEIGHT))
