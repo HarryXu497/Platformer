@@ -29,16 +29,17 @@ ICE_ENEMY_SIZE_Y = 60
 # Coin size
 COLLECTIBLE_SIZE = 16
 
-
 # Speed constants--------------------------------------------------------------
-MOVING_PLATFORM_SPEED = 15 # moving platform speed is inversely proportional to this
-
+MOVING_PLATFORM_SPEED = 15  # moving platform speed is inversely proportional to this
 
 # Game Window Options ---------------------------------------------------------
 pygame.init()
-WIDTH = 1366
-HEIGHT = 768
+WIDTH = 1920
+HEIGHT = 1080
 gameWindow = pygame.display.set_mode((WIDTH, HEIGHT))
+# gameWindow = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+# WIDTH, HEIGHT = gameWindow.get_size()
+
 
 # Game icon and caption ----------------------------------------
 icon = pygame.image.load("images/character/running/running2.png")
@@ -134,11 +135,12 @@ pygame.mixer.music.load("sounds/soundtrack.mp3")
 # Fonts -----------------------------------------------------------------------
 scoreFont = pygame.font.Font("fonts/ScoreFont.ttf", 50)
 scoreFontSmall = pygame.font.Font("fonts/ScoreFont.ttf", 32)
-titleFont = pygame.font.Font("fonts/TitleFontBold.ttf", (120 * WIDTH)//800)
-subTitleFont = pygame.font.Font("fonts/GravityBold8.ttf", (40 * WIDTH)//800)
-smallHeadingFont  = pygame.font.Font("fonts/GravityBold8.ttf", (16 * WIDTH)//800)
-instructionFont = pygame.font.Font("fonts/GravityRegular5.ttf", (25 * WIDTH)//800)
-deathMessageFont = pygame.font.Font("fonts/GravityRegular5.ttf", (16 * WIDTH)//800)
+titleFont = pygame.font.Font("fonts/TitleFontBold.ttf", (120 * WIDTH) // 800)
+subTitleFont = pygame.font.Font("fonts/GravityBold8.ttf", (40 * WIDTH) // 800)
+smallHeadingFont = pygame.font.Font("fonts/GravityBold8.ttf", (16 * WIDTH) // 800)
+playerNameFont = pygame.font.Font("fonts/GravityBold8.ttf", (5 * WIDTH) // 800)
+instructionFont = pygame.font.Font("fonts/GravityRegular5.ttf", (20 * WIDTH) // 800)
+deathMessageFont = pygame.font.Font("fonts/GravityRegular5.ttf", (16 * WIDTH) // 800)
 
 
 ###############################################################################
@@ -229,7 +231,8 @@ class VerticalMovingPlatform(Platform):
 
     """
 
-    def __init__(self, x: float, y: float, length: int, rangeOfMovement: float, speed: float = 0.5, image: pygame.Surface = grassTile) -> None:
+    def __init__(self, x: float, y: float, length: int, rangeOfMovement: float, speed: float = 0.5,
+                 image: pygame.Surface = grassTile) -> None:
         self.upperBound = y - rangeOfMovement
         self.lowerBound = y + rangeOfMovement
         self.moveDown = True
@@ -246,7 +249,8 @@ class VerticalMovingPlatform(Platform):
         """
 
         # draws the line of movement
-        pygame.draw.line(gameWindow, GREY, (self.x + self.length / 2, self.upperBound), (self.x + self.length / 2, self.lowerBound), 2)
+        pygame.draw.line(gameWindow, GREY, (self.x + self.length / 2, self.upperBound),
+                         (self.x + self.length / 2, self.lowerBound), 2)
 
         # drawing the platform at the correct location
         for xCoord in range(int(self.x), int(self.x + self.length), 20):
@@ -294,7 +298,8 @@ class HorizontalMovingPlatform(Platform):
 
     """
 
-    def __init__(self, x: float, y: float, length: int, rangeOfMovement: float, speed: float = 0.5, image: pygame.Surface = grassTile) -> None:
+    def __init__(self, x: float, y: float, length: int, rangeOfMovement: float, speed: float = 0.5,
+                 image: pygame.Surface = grassTile) -> None:
         self.originalX = x
         self.upperBound = x - rangeOfMovement
         self.lowerBound = x + rangeOfMovement
@@ -312,7 +317,8 @@ class HorizontalMovingPlatform(Platform):
         Return => None
         """
         # draws the line of movement
-        pygame.draw.line(gameWindow, BLACK, (self.upperBound, self.y + self.width/2), (self.lowerBound + self.length, self.y + self.width/2), 2)
+        pygame.draw.line(gameWindow, BLACK, (self.upperBound, self.y + self.width / 2),
+                         (self.lowerBound + self.length, self.y + self.width / 2), 2)
 
         # drawing the platform at the correct location
         for xCoord in range(int(self.x), int(self.x + self.length), 20):
@@ -419,7 +425,8 @@ class Enemy(object):
         self.damageTime = 0
 
         # Hitbox
-        self.hitbox = pygame.Rect(self.x - self.enemySizeX / 2, self.y - self.enemySizeY / 2, self.enemySizeX, self.enemySizeY)
+        self.hitbox = pygame.Rect(self.x - self.enemySizeX / 2, self.y - self.enemySizeY / 2, self.enemySizeX,
+                                  self.enemySizeY)
 
     def draw(self) -> None:
         """ Draws the enemy at the correct x and y location
@@ -490,8 +497,6 @@ class Enemy(object):
 
         # -------------------------------------------------------------------------------------------------------------
 
-
-
         # The enemy is dead -------------------------------------------------------------------------------------------
         else:
             # generate collectible and spawn it at the enemy's x and y coordinate
@@ -510,8 +515,6 @@ class Enemy(object):
 
         # -------------------------------------------------------------------------------------------------------------
 
-
-
         # if the platform is a vertical moving platform ---------------------------------------------------------------
         if isinstance(self.platform, VerticalMovingPlatform):
             # change the y depending on the platform
@@ -523,8 +526,6 @@ class Enemy(object):
 
         # -------------------------------------------------------------------------------------------------------------
 
-
-
         # if the platform is a horizontal moving platform -------------------------------------------------------------
         if isinstance(self.platform, HorizontalMovingPlatform):
             # change the y depending on the platform
@@ -534,10 +535,9 @@ class Enemy(object):
                 self.x -= self.platform.speed
         # -------------------------------------------------------------------------------------------------------------
 
-
-
         # Rebuilds the hitbox -------------------------------------------------
-        self.hitbox = pygame.Rect(self.x - self.enemySizeX / 2, self.y - self.enemySizeY / 2, self.enemySizeX, self.enemySizeY)
+        self.hitbox = pygame.Rect(self.x - self.enemySizeX / 2, self.y - self.enemySizeY / 2, self.enemySizeX,
+                                  self.enemySizeY)
 
     def checkAlive(self) -> None:
         """ Checks if the enemies health is below 0, and sets the 'isDead' attribute to True if so
@@ -769,8 +769,6 @@ class IceEnemy(Enemy):
 
         # -------------------------------------------------------------------------------------------------------------
 
-
-
         # The enemy is dead -------------------------------------------------------------------------------------------
         else:
             # generate collectible and spawn it at the enemy's x and y coordinate
@@ -788,8 +786,6 @@ class IceEnemy(Enemy):
             self.deadStage += 1
 
         # -------------------------------------------------------------------------------------------------------------
-
-
 
         # if the platform is a vertical moving platform ---------------------------------------------------------------
         if isinstance(self.platform, VerticalMovingPlatform):
@@ -809,10 +805,9 @@ class IceEnemy(Enemy):
                 self.x -= self.platform.speed
         # -------------------------------------------------------------------------------------------------------------
 
-
-
         # Rebuilds the hitbox -------------------------------------------------
-        self.hitbox = pygame.Rect(self.x - self.enemySizeX / 2, self.y - self.enemySizeY / 2, self.enemySizeX, self.enemySizeY)
+        self.hitbox = pygame.Rect(self.x - self.enemySizeX / 2, self.y - self.enemySizeY / 2, self.enemySizeX,
+                                  self.enemySizeY)
 
     def takeDamage(self, damage: int) -> None:
         """ Delegates call to super class method
@@ -2114,7 +2109,6 @@ class Flame(Projectile):
         self.fired = False
 
 
-
 class LaserBullet(Projectile):
     """ A class representing a laser bullet
 
@@ -2236,12 +2230,12 @@ class LaserBeam(Projectile):
         # draws the beam left or right depending on the 'movingLeft' boolean
         if self.movingLeft:
             if self.loopsSinceFire < len(self.images) * 3 - 1:
-                gameWindow.blit(self.images[self.loopsSinceFire//3], (self.x - WIDTH, self.y))
+                gameWindow.blit(self.images[self.loopsSinceFire // 3], (self.x - WIDTH, self.y))
             else:
                 gameWindow.blit(self.images[len(self.images) - 1], (self.x - WIDTH, self.y))
         else:
             if self.loopsSinceFire < len(self.images) * 3 - 1:
-                gameWindow.blit(self.images[self.loopsSinceFire//3], (self.x, self.y))
+                gameWindow.blit(self.images[self.loopsSinceFire // 3], (self.x, self.y))
             else:
                 gameWindow.blit(self.images[len(self.images) - 1], (self.x, self.y))
 
@@ -2608,7 +2602,8 @@ class Lightning(Projectile):
         super().__init__(x, y, 12, movingLeft, damage)
         self.hitbox = pygame.Rect(self.x - 10, self.y - 10, 26, 32)
         self.explosionHitbox = pygame.Rect(self.x - 20, self.y - 50, 66, 72)
-        self.explosionAnimation = [pygame.image.load(f"images/character/laser/lightning/lightning{i}.png") for i in range(1, 6)]
+        self.explosionAnimation = [pygame.image.load(f"images/character/laser/lightning/lightning{i}.png") for i in
+                                   range(1, 6)]
         for i in range(len(self.explosionAnimation)):
             self.explosionAnimation[i] = pygame.transform.scale(self.explosionAnimation[i], (18, HEIGHT))
 
@@ -2651,14 +2646,13 @@ class Lightning(Projectile):
         # draws the beam left or right depending on the 'movingLeft' boolean
         if self.collided:
             self.speedX = 0
-            gameWindow.blit(self.explosionAnimation[int(self.explosionAnimationStage//10)], (self.x, self.y - HEIGHT))
+            gameWindow.blit(self.explosionAnimation[int(self.explosionAnimationStage // 10)], (self.x, self.y - HEIGHT))
             self.explosionAnimationStage += 1
             if self.explosionAnimationStage == 1:
                 thunderSound.play()
 
 
 class EnemyProjectile(Projectile):
-
     """ The base class of a projectile fired from an enemy, which always does left
 
     Attributes:
@@ -2676,6 +2670,7 @@ class EnemyProjectile(Projectile):
 
 
     """
+
     def __init__(self, x: float, y: float, speedX: float, damage: int):
         super().__init__(x, y, speedX, True, damage)
 
@@ -2844,7 +2839,8 @@ class EnemyLaser(Projectile):
         super().__init__(x, HEIGHT, 2, False, damage)
         self.end = end
         self.hitbox = pygame.Rect(self.x - 10, 0, 27, HEIGHT)
-        self.explosionAnimation = [pygame.image.load(f"images/character/laser/lightning/lightning{i}.png") for i in range(1, 6)]
+        self.explosionAnimation = [pygame.image.load(f"images/character/laser/lightning/lightning{i}.png") for i in
+                                   range(1, 6)]
 
         for i in range(len(self.explosionAnimation)):
             self.explosionAnimation[i] = pygame.transform.scale(self.explosionAnimation[i], (27, HEIGHT))
@@ -2891,7 +2887,7 @@ class EnemyLaser(Projectile):
         Return => None
         """
         # draws the beam left or right depending on the 'movingLeft' boolean
-        gameWindow.blit(self.explosionAnimation[int(self.explosionAnimationStage//10)], (self.x, self.y - HEIGHT))
+        gameWindow.blit(self.explosionAnimation[int(self.explosionAnimationStage // 10)], (self.x, self.y - HEIGHT))
 
 
 #################################################################
@@ -2957,12 +2953,21 @@ class Player(object):
         hitbox: pygame.Surface
             The hitbox of the player
 
+        timeHit: float
+            The time that the player is hit by an enemy - used for tracking invicibility period
+
         WASD: bool
             Use WASD or Arrow keys
+
+        name: str
+            The player name displayed
+
+        nameRender: str
+            The name rendered as a font
     """
 
     def __init__(self, health: int, accelerationX: float, accelerationY: float, maxSpeedX: float, maxSpeedY: float,
-                 x: float, y: float, currentWeapon: Gun, WASD: bool) -> None:
+                 x: float, y: float, currentWeapon: Gun, WASD: bool, name: str) -> None:
         self.x = x
         self.y = y
         self.health = health
@@ -2978,6 +2983,10 @@ class Player(object):
         self.canThrowGrenade = True
         self.currentWeapon = currentWeapon
         self.WASD = WASD
+        self.name = name
+        self.nameRender = playerNameFont.render(self.name, False, BLACK)
+        self.timeHit = timeElapsed
+
 
         # Animation images
         self.hurt = [
@@ -3010,7 +3019,6 @@ class Player(object):
         self.damageMultiplier = 1
 
         self.hitbox = pygame.Rect(self.x - PLAYER_SIZE_X / 2, self.y - PLAYER_SIZE_Y / 2, PLAYER_SIZE_X, PLAYER_SIZE_Y)
-
 
     def move(self) -> None:
         """ Responsible for getting keyboard input and moving the player.
@@ -3174,6 +3182,11 @@ class Player(object):
 
         Return => None
         """
+        # gets the width of the name
+        playerNameTextWidth = playerNameFont.size(self.name)[0]
+
+        # blits the name above the player
+        gameWindow.blit(self.nameRender, (self.x - playerNameTextWidth / 2, self.y - PLAYER_SIZE_Y / 2 - 10))
 
         # uses 'x' and 'y' as the center
         gameWindow.blit(self.currentImage, (self.x - PLAYER_SIZE_X / 2, self.y - PLAYER_SIZE_Y / 2))
@@ -3291,7 +3304,8 @@ class Player(object):
         """
         global coinsCollected
         # creating hitbox
-        collectibleHitbox = pygame.Rect(collectibleToCheck.x - COLLECTIBLE_SIZE / 2, collectibleToCheck.y - COLLECTIBLE_SIZE / 2, COLLECTIBLE_SIZE, COLLECTIBLE_SIZE)
+        collectibleHitbox = pygame.Rect(collectibleToCheck.x - COLLECTIBLE_SIZE / 2,
+                                        collectibleToCheck.y - COLLECTIBLE_SIZE / 2, COLLECTIBLE_SIZE, COLLECTIBLE_SIZE)
 
         # If the collectible is an instance of a Coin, increment the score and collect the collectible
         if isinstance(collectibleToCheck, Coin):
@@ -3311,9 +3325,11 @@ class Player(object):
         Return => bool: whether there is a collision or not
         """
         # Gets the enemy hitboxes -------------------------------------------------------------------------------------
-        enemyHitboxL = pygame.Rect(enemy.x - enemy.enemySizeX / 2, enemy.y - enemy.enemySizeY / 2, enemy.enemySizeX / 2, enemy.enemySizeY)
+        enemyHitboxL = pygame.Rect(enemy.x - enemy.enemySizeX / 2, enemy.y - enemy.enemySizeY / 2, enemy.enemySizeX / 2,
+                                   enemy.enemySizeY)
         enemyHitboxR = pygame.Rect(enemy.x, enemy.y - enemy.enemySizeY / 2, enemy.enemySizeX / 2, enemy.enemySizeY)
-        enemyHitboxTop = pygame.Rect(enemy.x - enemy.enemySizeX / 2 + 15, enemy.y - enemy.enemySizeY / 2 - 5, enemy.enemySizeX - 30, 2)
+        enemyHitboxTop = pygame.Rect(enemy.x - enemy.enemySizeX / 2 + 15, enemy.y - enemy.enemySizeY / 2 - 5,
+                                     enemy.enemySizeX - 30, 2)
 
         # -------------------------------------------------------------------------------------------------------------
 
@@ -3395,7 +3411,9 @@ class Player(object):
         """
         onGround = False
         for platform in levelToCheck.platforms:
-            if platform.x + platform.length + PLAYER_SIZE_X / 2 > self.x > platform.x - PLAYER_SIZE_X / 2 and platform.y + 10 > self.y + PLAYER_SIZE_Y / 2 > platform.y:
+            groundHitbox = pygame.Rect(platform.x, platform.y - 3, platform.length, 2)
+            # if platform.x + platform.length + PLAYER_SIZE_X / 2 > self.x > platform.x - PLAYER_SIZE_X / 2 and platform.y + 10 > self.y + PLAYER_SIZE_Y / 2 > platform.y:
+            if self.hitbox.colliderect(groundHitbox):
                 self.y = platform.y - PLAYER_SIZE_Y / 2
                 self.speedY = 0
                 onGround = True
@@ -3403,9 +3421,9 @@ class Player(object):
                 # If the player is on the ground and on a moving platform, it moves with the platform
                 if onGround and isinstance(platform, VerticalMovingPlatform):
                     if platform.moveDown:
-                        self.y += platform.speed
+                        self.y += platform.speed * 2
                     else:
-                        self.y -= platform.speed
+                        self.y -= platform.speed * 2
 
                 if onGround and isinstance(platform, HorizontalMovingPlatform):
                     if platform.moveRight:
@@ -3422,8 +3440,8 @@ class Player(object):
 
         self.touchingBlock = onGround
 
-        if self.x >= 200:
-            moveBackground(1)
+        # if self.x >= 200:
+        #     moveBackground(1)
 
     def checkChestCollision(self, chestToCheck):
         """ Checks if the player has collided with any chests
@@ -3452,7 +3470,7 @@ class Player(object):
 
                 # blitting name to screen -----------------------------------------------------
                 if not chestToCheck.collected:
-                    gameWindow.blit(weaponName, ((chestToCheck.platform.x + chestToCheck.platform.length / 2) - weaponNameLength/2, chestToCheck.platform.y - 43))
+                    gameWindow.blit(weaponName, ((chestToCheck.platform.x + chestToCheck.platform.length / 2) - weaponNameLength / 2, chestToCheck.platform.y - 43))
 
                 # picking up the weapon -------------------------------------------------------
                 if (keys[pygame.K_x] and self.WASD) or (keys[pygame.K_SLASH] and not self.WASD):
@@ -3466,9 +3484,10 @@ class Player(object):
                 if not chestToCheck.opening:
                     costRender = scoreFontSmall.render(f"{POTION_COST} coins", True, colour)
                     costRenderLength = costRender.get_size()[0]
-                    gameWindow.blit(costRender, (chestToCheck.platform.x + chestToCheck.platform.length / 2 - costRenderLength/2, chestToCheck.platform.y - 48))
+                    gameWindow.blit(costRender, (chestToCheck.platform.x + chestToCheck.platform.length / 2 - costRenderLength / 2, chestToCheck.platform.y - 48))
 
-                if ((keys[pygame.K_x] and self.WASD) or (keys[pygame.K_SLASH] and not self.WASD)) and not chestToCheck.opening:
+                if ((keys[pygame.K_x] and self.WASD) or (
+                        keys[pygame.K_SLASH] and not self.WASD)) and not chestToCheck.opening:
                     timeOpened = timeElapsed
                     if coinsCollected >= POTION_COST:
                         coinsCollected -= POTION_COST
@@ -3484,7 +3503,8 @@ class Player(object):
                     if not chestToCheck.collected and chestToCheck.opening:
                         gameWindow.blit(upgradeName, ((chestToCheck.platform.x + chestToCheck.platform.length / 2) - upgradeNameLength / 2, chestToCheck.platform.y - 48))
 
-                    if ((keys[pygame.K_x] and self.WASD) or (keys[pygame.K_SLASH] and not self.WASD)) and not chestToCheck.collected and timeElapsed - timeOpened >= 0.25:
+                    if ((keys[pygame.K_x] and self.WASD) or (keys[
+                                                                 pygame.K_SLASH] and not self.WASD)) and not chestToCheck.collected and timeElapsed - timeOpened >= 0.25:
                         if isinstance(chestToCheck.upgrade, StrengthPotion):
                             if self.damageMultiplier < 1.7:
                                 self.damageMultiplier += round(chestToCheck.upgrade.strength / 100, 2)
@@ -3594,9 +3614,9 @@ class Coin(Collectible):
                 self.y = platform.y - 10
                 self.x = platform.x + self.offset
 
-
         # blits the image to the screen ---------------------------------------
-        gameWindow.blit(self.coinImages[int(self.animationStage // 10)], (self.x - COLLECTIBLE_SIZE / 2, self.y - COLLECTIBLE_SIZE / 2))
+        gameWindow.blit(self.coinImages[int(self.animationStage // 10)],
+                        (self.x - COLLECTIBLE_SIZE / 2, self.y - COLLECTIBLE_SIZE / 2))
 
         # increments animation stage ------------------------------------------
         self.animationStage += 1
@@ -3635,6 +3655,7 @@ class UpgradePotion(Collectible):
                 The name of the upgrade, which is displayed
 
         """
+
     def __init__(self, x: float, y: float, image: pygame.Surface, name: str):
         super().__init__(x, y)
         self.image = image
@@ -3710,6 +3731,7 @@ class HealthPotion(UpgradePotion):
             The y position of the collectible
 
     """
+
     def __init__(self, x, y, health):
         self.health = health
         if self.health <= 10:
@@ -3745,6 +3767,7 @@ class Chest(object):
                 If the chest if opening or not. Used to play the chet open sound only once
 
     """
+
     def __init__(self, platform: Platform) -> None:
         self.platform = platform
         self.hitbox = pygame.Rect((self.platform.x + self.platform.length / 2) - 32, self.platform.y - 43, 64, 64)
@@ -3793,7 +3816,6 @@ class WeaponChest(Chest):
         self.weapon = weapon
         self.collected = False
         self.opening = False
-
 
     def draw(self) -> None:
         """ Draws the chest at the middle of the platform. Draws the weapon's icon if the chest is opened
@@ -3992,7 +4014,7 @@ class Level(object):
             self.startPlatform = Platform(100, HEIGHT // 2 - 100, 100, iceTile)
 
         else:
-            self.startPlatform = Platform(100, HEIGHT//2 - 100, 100)
+            self.startPlatform = Platform(100, HEIGHT // 2 - 100, 100)
 
         self.platforms: list[Union[Platform, HorizontalMovingPlatform, VerticalMovingPlatform]] = [self.startPlatform]
         self.maxPlatforms = maxPlatforms
@@ -4022,16 +4044,12 @@ class Level(object):
 
         # -------------------------------------------------------------------------------------------------------------
 
-
-
         # removes enemies it they are off the screen ------------------------------------------------------------------
         for enemy in enemies:
             if enemy.platform.x + enemy.platform.length < -5:
                 enemies.pop(0)
 
         # -------------------------------------------------------------------------------------------------------------
-
-
 
         # removes chests if they are off the screen -------------------------------------------------------------------
         for chest in chests:
@@ -4082,14 +4100,18 @@ class Level(object):
                     self.platforms.append(
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 6) * 20),
                                                self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
-                                               (randint(3, 6) * 10), choice([i/MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
+                                               (randint(3, 6) * 10),
+                                               choice([i / MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
                     )
 
-                elif movingPlatformChance == 2 and not (isinstance(self.platforms[-1], VerticalMovingPlatform) or isinstance(self.platforms[-1], HorizontalMovingPlatform)):
+                elif movingPlatformChance == 2 and not (
+                        isinstance(self.platforms[-1], VerticalMovingPlatform) or isinstance(self.platforms[-1],
+                                                                                             HorizontalMovingPlatform)):
                     self.platforms.append(
-                        HorizontalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(8, 10) * 20),
-                                                 self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
-                                                 (randint(4, 7) * 10), choice([i/MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
+                        HorizontalMovingPlatform(
+                            self.platforms[-1].x + self.platforms[-1].length + (randint(8, 10) * 20),
+                            self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
+                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
@@ -4120,14 +4142,18 @@ class Level(object):
                     self.platforms.append(
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 7) * 20),
                                                self.platforms[-1].y - (randint(2, 3) * 20), (randint(7, 10) * 20),
-                                               (randint(3, 6) * 10), choice([i/MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
+                                               (randint(3, 6) * 10),
+                                               choice([i / MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
                     )
 
-                elif movingPlatformChance == 2 and not (isinstance(self.platforms[-1], VerticalMovingPlatform) or isinstance(self.platforms[-1], HorizontalMovingPlatform)):
+                elif movingPlatformChance == 2 and not (
+                        isinstance(self.platforms[-1], VerticalMovingPlatform) or isinstance(self.platforms[-1],
+                                                                                             HorizontalMovingPlatform)):
                     self.platforms.append(
-                        HorizontalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(9, 10) * 20),
-                                                 self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20),
-                                                 (randint(4, 7) * 10), choice([i/MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
+                        HorizontalMovingPlatform(
+                            self.platforms[-1].x + self.platforms[-1].length + (randint(9, 10) * 20),
+                            self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20),
+                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
@@ -4234,10 +4260,12 @@ class Level(object):
 
             # generate potion
             if potionChoice == 1:
-                potion = StrengthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, choice([3, 5, 10]))
+                potion = StrengthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
+                                        choice([3, 5, 10]))
 
             elif potionChoice == 2:
-                potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, choice([10, 20, 25]))
+                potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
+                                      choice([10, 20, 25]))
 
             # appends upgrade chest to list ---------------------------------------------------
             chests.append(UpgradeChest(self.platforms[-1], potion))
@@ -4245,7 +4273,6 @@ class Level(object):
             self.numOfPlatforms += 1
 
         # -------------------------------------------------------------------------------------------------------------
-
 
         # Append new platform with the 'next level' portal ------------------------------------------------------------
         if self.numOfPlatforms == self.maxPlatforms + 1:
@@ -4299,6 +4326,7 @@ class MissileChannel(object):
             Used to flash the channel for a certain amount of time
 
     """
+
     def __init__(self, y: float, height: float, colour: tuple[int, int, int]) -> None:
         self.hitbox = pygame.Rect(WIDTH - 2, y, 2, height)
 
@@ -4364,7 +4392,6 @@ class MissileChannel(object):
             self.colour = self.originalColour
 
 
-
 class BossLevel(Level):
     """ An object representing an in-game level with a boss fight
 
@@ -4404,6 +4431,7 @@ class BossLevel(Level):
             The animation stage of the instructions, which has a "typed-out" animation
 
     """
+
     def __init__(self, maxPlatforms: int, background: pygame.Surface = backgroundImage) -> None:
         super().__init__(maxPlatforms, background)
 
@@ -4432,7 +4460,6 @@ class BossLevel(Level):
 
         # animation
         self.instructionAnimationStage = 0
-
 
     def generatePlatforms(self) -> None:
         """ Generates platforms based on the type and location of the previous platform
@@ -4476,14 +4503,17 @@ class BossLevel(Level):
                     self.platforms.append(
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 6) * 20),
                                                self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
-                                               (randint(3, 6) * 10), choice([i/10 for i in range(6, 10)]), image)
+                                               (randint(3, 6) * 10), choice([i / 10 for i in range(6, 10)]), image)
                     )
 
-                elif movingPlatformChance == 2 and not (isinstance(self.platforms[-1], VerticalMovingPlatform) or isinstance(self.platforms[-1], HorizontalMovingPlatform)):
+                elif movingPlatformChance == 2 and not (
+                        isinstance(self.platforms[-1], VerticalMovingPlatform) or isinstance(self.platforms[-1],
+                                                                                             HorizontalMovingPlatform)):
                     self.platforms.append(
-                        HorizontalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(8, 10) * 20),
-                                                 self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
-                                                 (randint(4, 7) * 10), choice([i/10 for i in range(6, 10)]), image)
+                        HorizontalMovingPlatform(
+                            self.platforms[-1].x + self.platforms[-1].length + (randint(8, 10) * 20),
+                            self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
+                            (randint(4, 7) * 10), choice([i / 10 for i in range(6, 10)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
@@ -4514,14 +4544,17 @@ class BossLevel(Level):
                     self.platforms.append(
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 7) * 20),
                                                self.platforms[-1].y - (randint(2, 3) * 20), (randint(7, 10) * 20),
-                                               (randint(3, 6) * 10), choice([i/10 for i in range(6, 10)]), image)
+                                               (randint(3, 6) * 10), choice([i / 10 for i in range(6, 10)]), image)
                     )
 
-                elif movingPlatformChance == 2 and not (isinstance(self.platforms[-1], VerticalMovingPlatform) or isinstance(self.platforms[-1], HorizontalMovingPlatform)):
+                elif movingPlatformChance == 2 and not (
+                        isinstance(self.platforms[-1], VerticalMovingPlatform) or isinstance(self.platforms[-1],
+                                                                                             HorizontalMovingPlatform)):
                     self.platforms.append(
-                        HorizontalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(9, 10) * 20),
-                                                 self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20),
-                                                 (randint(4, 7) * 10), choice([i/10 for i in range(6, 10)]), image)
+                        HorizontalMovingPlatform(
+                            self.platforms[-1].x + self.platforms[-1].length + (randint(9, 10) * 20),
+                            self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20),
+                            (randint(4, 7) * 10), choice([i / 10 for i in range(6, 10)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
@@ -4544,8 +4577,6 @@ class BossLevel(Level):
                                      self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20), image)
                         )
 
-
-
             # if the last platform is not the spawn platform and 'chanceOfEnemy' is 1 ---------
             if self.stage == self.ENEMY_STAGE and self.platforms[-1] is not self.startPlatform and self.enemiesToGenerate > 0:
 
@@ -4561,7 +4592,8 @@ class BossLevel(Level):
                     )
 
                 # underworld enemy
-                elif typeOfEnemy == 2 and (self.background is iceBackgroundImage or self.background is underworldBackgroundImage):
+                elif typeOfEnemy == 2 and (
+                        self.background is iceBackgroundImage or self.background is underworldBackgroundImage):
                     enemies.append(
                         UnderworldEnemy(self.platforms[-1], speed, 100)
                     )
@@ -4594,7 +4626,6 @@ class BossLevel(Level):
 
         # -------------------------------------------------------------------------------------------------------------
 
-
         # Append new platform with the upgrade chest ------------------------------------------------------------------
         if self.generatePlatform and self.levelOver:
             if isinstance(self.platforms[-1], HorizontalMovingPlatform):
@@ -4620,10 +4651,12 @@ class BossLevel(Level):
 
             # generate potion
             if potionChoice == 1:
-                potion = StrengthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, choice([3, 5, 10]))
+                potion = StrengthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
+                                        choice([3, 5, 10]))
 
             elif potionChoice == 2:
-                potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, choice([10, 20, 25]))
+                potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
+                                      choice([10, 20, 25]))
 
             # appends upgrade chest to list ---------------------------------------------------
             chests.append(UpgradeChest(self.platforms[-1], potion))
@@ -4645,7 +4678,6 @@ class BossLevel(Level):
             self.generatePlatform = False
 
         # -------------------------------------------------------------------------------------------------------------
-
 
     def redrawPlatforms(self, playerToCheck: Player) -> None:
         """ Responsible for drawing and moving the player, as well has the weapon cooldown
@@ -4670,7 +4702,6 @@ class BossLevel(Level):
             self.fireWeapon()
             self.drawChannels()
 
-
     def fireMissile(self) -> None:
         """ Fires a missile and opens the respective channel at a random location
 
@@ -4679,7 +4710,7 @@ class BossLevel(Level):
 
         Return => None
         """
-        randomChannel = randint(0, HEIGHT//50 - 1)
+        randomChannel = randint(0, HEIGHT // 50 - 1)
 
         self.hitboxes[randomChannel].open()
 
@@ -4695,8 +4726,6 @@ class BossLevel(Level):
 
         if self.canFireLaser:
             bullets.append(EnemyLaser(start, end, 12))
-
-
 
     def drawChannels(self) -> None:
         """ Draws the channels and also closes them after a period of time
@@ -4724,7 +4753,8 @@ class BossLevel(Level):
         """
         for channel in self.hitboxes:
             for bullet in bullets:
-                if bullet.hitbox.colliderect(channel.hitbox) and channel.isOpened and not isinstance(bullet, EnemyProjectile):
+                if bullet.hitbox.colliderect(channel.hitbox) and channel.isOpened and not isinstance(bullet,
+                                                                                                     EnemyProjectile):
                     bossHitSound.stop()
                     bossHitSound.play()
                     self.health -= int(playerToCheck.currentWeapon.damage // 3)
@@ -4737,7 +4767,8 @@ class BossLevel(Level):
                         bullets.remove(bullet)
 
                 # plays sound if the channel is not open
-                elif bullet.hitbox.colliderect(channel.hitbox) and not (isinstance(bullet, EnemyProjectile) or isinstance(bullet, EnemyLaser)):
+                elif bullet.hitbox.colliderect(channel.hitbox) and not (
+                        isinstance(bullet, EnemyProjectile) or isinstance(bullet, EnemyLaser)):
                     bossMissedSound.stop()
                     bossMissedSound.play()
 
@@ -4756,10 +4787,11 @@ class BossLevel(Level):
             if self.instructionAnimationStage < len(instructionStr) * 2:
                 self.instructionAnimationStage += 1
 
-            bossInstructions = instructionFont.render(instructionStr[:self.instructionAnimationStage//2], False, WHITE)
-            instructionsWidth, instructionsHeight = instructionFont.size(instructionStr[:self.instructionAnimationStage//2])
-            gameWindow.blit(bossInstructions, (WIDTH/2 - instructionsWidth / 2, HEIGHT - 40 - instructionsHeight))
-
+            bossInstructions = instructionFont.render(instructionStr[:self.instructionAnimationStage // 2], False,
+                                                      WHITE)
+            instructionsWidth, instructionsHeight = instructionFont.size(
+                instructionStr[:self.instructionAnimationStage // 2])
+            gameWindow.blit(bossInstructions, (WIDTH / 2 - instructionsWidth / 2, HEIGHT - 40 - instructionsHeight))
 
     def fireWeapon(self) -> None:
         """ Draws the platforms
@@ -4776,7 +4808,7 @@ class BossLevel(Level):
         # firing laser randomly
         if randint(1, 50) == 1 and self.stage == self.LASER_STAGE:
             start = choice([-27, WIDTH])
-            end = (WIDTH/2 - randint(0, int(WIDTH/8))) if start == -27 else (WIDTH/2 + randint(0, int(WIDTH/8)))
+            end = (WIDTH / 2 - randint(0, int(WIDTH / 8))) if start == -27 else (WIDTH / 2 + randint(0, int(WIDTH / 8)))
             self.fireLaser(start, end)
 
     def checkAlive(self) -> None:
@@ -4820,7 +4852,6 @@ def moveBackground(rate: float) -> None:
     """ Moves the background to give the illusion of the player moving forward
 
     Parameters:
-        playerToCheck: Player -> the rate of which the backgrounds moves
         rate: float -> the rate of which the backgrounds moves
 
 
@@ -5016,17 +5047,20 @@ def generateLevel(playerToCheck: Player) -> Level:
         if portal.hitbox.colliderect(playerToCheck.hitbox):
 
             # renders text
-            portalText = scoreFontSmall.render("[x] Next Level?", True, colour)
+            if playerToCheck.WASD:
+                portalText = scoreFontSmall.render("[x] Next Level?", True, colour)
+            else:
+                portalText = scoreFontSmall.render("[/] Next Level?", True, colour)
 
             # blits text
             gameWindow.blit(portalText, (portal.platform.x + portal.platform.length / 2 - 96, portal.platform.y - 118))
 
             # starts the transition to underworld level ---------------------------------------------------------------
-            if keys[pygame.K_x] and levelNumber == 5:
+            if ((keys[pygame.K_x] and playerToCheck.WASD) or (keys[pygame.K_SLASH] and not playerToCheck.WASD)) and levelNumber == 5:
                 levelTransition = True
 
             # resets level - clears lists, resets positions, etc ------------------------------------------------------
-            if keys[pygame.K_x] and not levelTransition:
+            if ((keys[pygame.K_x] and playerToCheck.WASD) or (keys[pygame.K_SLASH] and not playerToCheck.WASD)) and not levelTransition:
                 portalEnter.play()
                 chests.clear()
                 portals.clear()
@@ -5055,19 +5089,18 @@ def generateLevel(playerToCheck: Player) -> Level:
                 levelBackgroundImage = backgroundImage
 
                 # resets acceleration and speed
-                for player in players:
-                    player.accelerationX = 0.25
-                    player.speedY = 1
+                for play in players:
+                    play.accelerationX = 0.25
+                    play.speedY = 1
 
                 # sets background based on level number
                 if 6 <= levelNumber <= 10:
                     levelBackgroundImage = underworldBackgroundImage
 
-
                 if 11 <= levelNumber <= 15:
                     # acceleration as the level has 'ice'
-                    for player in players:
-                        player.accelerationX = 0.15
+                    for play in players:
+                        play.accelerationX = 0.15
                     levelBackgroundImage = iceBackgroundImage
 
                 platformNum = levelNumber * 5 + 5
@@ -5080,8 +5113,6 @@ def generateLevel(playerToCheck: Player) -> Level:
                 return Level(platformNum, levelBackgroundImage)
 
             # ---------------------------------------------------------------------------------------------------------
-
-
 
     # Going into the underworld transition ----------------------------------------------------------------------------
     if levelTransition:
@@ -5165,7 +5196,8 @@ def checkBulletCollision(playerToCheck: Player) -> None:
         for enemy in enemies:
             # for staffs, which target the closest enemy
             enemyLargeHitbox = pygame.Rect(enemy.x, 0, enemy.enemySizeX, HEIGHT)
-            if enemy.hitbox.colliderect(bullet.hitbox) and not enemy.damaged and not enemy.isDead and not isinstance(bullet, Icicle) and not isinstance(bullet, Lightning) and not isinstance(bullet, EnemyLaser):
+            if enemy.hitbox.colliderect(bullet.hitbox) and not enemy.damaged and not enemy.isDead and not isinstance(
+                    bullet, Icicle) and not isinstance(bullet, Lightning) and not isinstance(bullet, EnemyLaser):
                 # damages enemy if the enemy is not already damaged(invincible) and the bullet is not an icicle
 
                 if isinstance(bullet, Flame):
@@ -5185,7 +5217,6 @@ def checkBulletCollision(playerToCheck: Player) -> None:
                 enemy.takeDamage(bullet.damage)
                 enemy.damaged = True
                 bullet.collided = True
-
 
         # removes bullet if it has left the screen ----------------------------
         if (bullet.x > WIDTH + 10 or bullet.x < -10 or bullet.y > HEIGHT + 10) and not isinstance(bullet, EnemyLaser):
@@ -5222,7 +5253,6 @@ def checkBulletCollision(playerToCheck: Player) -> None:
             if bullet in bullets:
                 bullets.remove(bullet)
 
-
         # enemy-fired bullets which get deleted after collision ----------------
         if isinstance(bullet, Icicle) or isinstance(bullet, EnemyBullet) or isinstance(bullet, EnemyLaser):
             if bullet.hitbox.colliderect(playerToCheck.hitbox):
@@ -5232,7 +5262,6 @@ def checkBulletCollision(playerToCheck: Player) -> None:
                 # removes bullet if possible
                 if bullet in bullets:
                     bullets.remove(bullet)
-
 
 
 def checkGrenadeCollision() -> None:
@@ -5287,15 +5316,14 @@ def redrawPlayer(playerToDraw: Player) -> None:
 
     Return => None
     """
-    global timeFired, timeHit, timeThrown
+    global timeFired, timeThrown
     playerToDraw.move()
     playerToDraw.draw()
     # Fire weapon if possible
     playerToDraw.fireWeapon()
 
     # Draw the bullet GUI with the time
-    drawMagazineDisplay(playerToDraw, timeElapsed - playerToDraw.currentWeapon.timeSinceFire, playerToDraw.currentWeapon.fireRate,
-                        HEIGHT - 50 * (len(players) - (players.index(playerToDraw))))
+    drawMagazineDisplay(playerToDraw, timeElapsed - playerToDraw.currentWeapon.timeSinceFire, playerToDraw.currentWeapon.fireRate, HEIGHT - 50 * (len(players) - (players.index(playerToDraw))))
 
     # Invincible delay --------------------------------------------------------
     enemyHit = False
@@ -5303,14 +5331,12 @@ def redrawPlayer(playerToDraw: Player) -> None:
         enemyHit = playerToDraw.checkEnemyCollision(enemy)
     # get the current time
     if enemyHit:
-        timeHit = timeElapsed
+        playerToDraw.timeHit = timeElapsed
 
-    if (timeElapsed - timeHit) >= INVINCIBLE_DELAY:
+    if (timeElapsed - playerToDraw.timeHit) >= INVINCIBLE_DELAY:
         playerToDraw.invincible = False
 
     # -------------------------------------------------------------------------
-
-
 
     # Checks for player collision with the edges of the screen -----------------
     if not levelTransition:
@@ -5342,7 +5368,7 @@ def redrawEnemies(playerToCheck: Player) -> None:
         if enemyHit and enemy.damaged:
             enemyTimeHit = timeElapsed
 
-        if (timeElapsed - timeHit) >= 0.25:
+        if (timeElapsed - enemyTimeHit) >= 0.25:
             enemy.damaged = False
 
     # delete enemies that are finished their death animation
@@ -5428,8 +5454,6 @@ def drawHealthBar(playerToCheck: Player, y: int) -> None:
 
     # -------------------------------------------------------------------------
 
-
-
     # border ------------------------------------------------------------------
     pygame.draw.rect(gameWindow, BLACK, (WIDTH - 370, y, 286, 36), 5, 8)
     pygame.draw.rect(gameWindow, (64, 64, 64), (WIDTH - 370, y - 2, 288, 40), 3, 8)
@@ -5462,7 +5486,7 @@ def drawCoinDisplay() -> None:
     gameWindow.blit(scoreRender, (100, 20))
 
 
-def drawBulletDisplay(timeSinceFire: float, fireRate: float) -> None:
+def drawBulletDisplay(timeSinceFire: float, fireRate: float, y: float) -> None:
     """ draws bullet display at bottom right corner - time until you can fire again.
         The bullet is "greyed out" and slowly "reloads"
 
@@ -5473,24 +5497,27 @@ def drawBulletDisplay(timeSinceFire: float, fireRate: float) -> None:
         fireRate: float
             fire rate of the weapon
 
+        y: float
+            The y position of the bullet
+
 
     Return => None
     """
     # draws different versions of the bullet depending on 'timeSinceFire'
     if round(timeSinceFire, 2) <= round(fireRate / 6, 2):
-        gameWindow.blit(bulletGUI[0], (WIDTH - 80, HEIGHT - 50))
+        gameWindow.blit(bulletGUI[0], (WIDTH - 80, y))
 
     elif round(timeSinceFire, 2) <= round(fireRate / 3, 2):
-        gameWindow.blit(bulletGUI[1], (WIDTH - 80, HEIGHT - 50))
+        gameWindow.blit(bulletGUI[1], (WIDTH - 80, y))
 
     elif round(timeSinceFire, 2) <= round(fireRate / 2, 2):
-        gameWindow.blit(bulletGUI[2], (WIDTH - 80, HEIGHT - 50))
+        gameWindow.blit(bulletGUI[2], (WIDTH - 80, y))
 
     elif round(timeSinceFire, 2) <= round(fireRate / 1.25, 2):
-        gameWindow.blit(bulletGUI[3], (WIDTH - 80, HEIGHT - 50))
+        gameWindow.blit(bulletGUI[3], (WIDTH - 80, y))
 
     else:
-        gameWindow.blit(bulletGUI[4], (WIDTH - 80, HEIGHT - 50))
+        gameWindow.blit(bulletGUI[4], (WIDTH - 80, y))
 
 
 def drawMagazineDisplay(playerToCheck: Player, timeSinceFire: float, fireRate: float, y: float) -> None:
@@ -5514,7 +5541,7 @@ def drawMagazineDisplay(playerToCheck: Player, timeSinceFire: float, fireRate: f
     """
     # draws different versions of the bullet depending on 'timeSinceFire'
     if playerToCheck.currentWeapon.bulletsInMagazine == 0:
-        drawBulletDisplay(timeSinceFire, fireRate)
+        drawBulletDisplay(timeSinceFire, fireRate, y)
 
     elif playerToCheck.currentWeapon.bulletsInMagazine == playerToCheck.currentWeapon.clipSize // 4:
         gameWindow.blit(bulletGUI[1], (WIDTH - 80, y))
@@ -5527,6 +5554,8 @@ def drawMagazineDisplay(playerToCheck: Player, timeSinceFire: float, fireRate: f
 
     else:
         gameWindow.blit(bulletGUI[4], (WIDTH - 80, y))
+    # displays the player name in middle of the bullet
+    gameWindow.blit(playerToCheck.nameRender, (WIDTH - 80 + bulletGUI[0].get_size()[0] / 2, y + bulletGUI[0].get_size()[1] / 2 - playerToCheck.nameRender.get_size()[1] / 2))
 
 
 def drawWeaponDisplay(playerToCheck: Player, y) -> None:
@@ -5565,7 +5594,7 @@ def drawInstructions() -> None:
     global tutorialLettersToRender, instructionNum, timeOfFinishedWriting
 
     # rendering
-    drawInstruction(instructions[instructionNum], tutorialLettersToRender//2)
+    drawInstruction(instructions[instructionNum], tutorialLettersToRender // 2)
 
     # typed-out animation
     if tutorialLettersToRender < len(instructions[instructionNum]) * 2:
@@ -5589,7 +5618,6 @@ def drawWeaponUnlock():
         timeOfFinishedWriting = timeElapsed
 
 
-
 def drawInstruction(messageToWrite: str, lettersToRender: int) -> None:
     instruction = instructionFont.render(messageToWrite[:lettersToRender], False, WHITE)
     instructionWidth = instructionFont.size(messageToWrite[:lettersToRender])[0]
@@ -5605,12 +5633,11 @@ def drawGUI(playerList: list[Player]) -> None:
     Return => None
     """
     yPos = 25
-    for player in playerList:
-        drawHealthBar(player, yPos)
-        drawWeaponDisplay(player, yPos + 35)
+    for play in playerList:
+        drawHealthBar(play, yPos)
+        drawWeaponDisplay(play, yPos + 35)
         yPos += 80
 
-    
     drawCoinDisplay()
     # only draws instructions if the level is the tutorial level and its not finished drawing
     if instructionNum < len(instructions):
@@ -5652,6 +5679,13 @@ def everyPlayer(playerList: list[Player], func: Callable[[Any], bool]) -> bool:
         if not func(playerToCheck):
             return False
     return True
+
+
+def anyPlayer(playerList: list[Player], func: Callable[[Any], bool]) -> bool:
+    for playerToCheck in playerList:
+        if func(playerToCheck):
+            return True
+    return False
 
 
 # Timer
@@ -5711,11 +5745,11 @@ numOfPlayers = 1
 
 # Player and spawn platform
 players = [
-    Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, MissileLauncher(), True),
-    Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, MissileLauncher(), False),
+    Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), True, "p1"),
+    Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), False, "p2"),
 ]
 
-spawnPlatform = Platform(100, HEIGHT//2 - 100, 100)
+spawnPlatform = Platform(100, HEIGHT // 2 - 100, 100)
 
 # lists
 enemies = []
@@ -5726,7 +5760,7 @@ chests = []
 portals = []
 
 # coins collected
-coinsCollected = 110
+coinsCollected = 0
 
 # initial level
 level = Level(5)
@@ -5780,15 +5814,14 @@ titleLettersToRender = 0
 tutorialLettersToRender = 0
 instructionNum = 0
 timeOfFinishedWriting = 0
-instructions = ["press [a] and [d] to move", "press [space] to jump", "press [w] to shoot",
-                "press [p] to pause/unpause"]
+instructions = ["press [a] and [d]/[<] and [>] to move", "press [space]/[^] to jump", "press [w]/[down arrow] to shoot",
+                "press [x]/[/] to pick up weapons"]
 # laser weapon unlock
 weaponUnlockLettersToRender = 0
 weaponUnlockMessage = "laser weapons unlocked"
 
 ## Pausing Variables ##
 timeOfPause = 0
-
 
 ###############################################################################
 #
@@ -5830,7 +5863,6 @@ while inMenu:
     gameWindow.blit(cloudsImage, (menuImagesX, 0))
     gameWindow.blit(cloudsImage, (menuImagesX + WIDTH, 0))
 
-
     # mouse position and button status --------------------------------
     mousePos = pygame.mouse.get_pos()
     mouseClicked = pygame.mouse.get_pressed(3)[0]
@@ -5840,65 +5872,69 @@ while inMenu:
     titleShadow = titleFont.render(titleStr[:titleLettersToRender // 3], False, BLACK)
     playText = subTitleFont.render("Play", False, BLACK)
     playTextShadow = subTitleFont.render("Play", False, WHITE)
-    singleplayerText = smallHeadingFont.render("1 player", False, BLACK)
-    singleplayerTextShadow = smallHeadingFont.render("1 player", False, WHITE)
+    singlePlayerText = smallHeadingFont.render("1 player", False, BLACK)
+    singlePlayerTextShadow = smallHeadingFont.render("1 player", False, WHITE)
     multiplayerText = smallHeadingFont.render("2 players", False, BLACK)
     multiplayerTextShadow = smallHeadingFont.render("2 players", False, WHITE)
 
     # getting the width and height of the title and play text ---------
     titleWidth, titleHeight = titleFont.size(titleStr)
     playTextWidth, playTextHeight = subTitleFont.size("Play")
-    singleplayerTextWidth, singleplayerTextHeight = smallHeadingFont.size("1 player")
+    singlePlayerTextWidth, singlePlayerTextHeight = smallHeadingFont.size("1 player")
     multiplayerTextWidth, multiplayerTextHeight = smallHeadingFont.size("2 players")
 
     # setting hitbox for play button ----------------------------------
-    playHoverHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41/108, playTextWidth, playTextHeight + singleplayerTextHeight + multiplayerTextHeight + 60)
-    playHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41/108, playTextWidth, playTextHeight)
-    singleplayerHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41/108 + playTextHeight + 30, singleplayerTextWidth, singleplayerTextHeight)
-    multiplayerHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41/108 + playTextHeight + singleplayerTextHeight + 50,
-                                    multiplayerTextWidth, multiplayerTextHeight)
+    playHoverHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108, playTextWidth, playTextHeight + singlePlayerTextHeight + multiplayerTextHeight + 60)
+    playHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108, playTextWidth, playTextHeight)
+    singlePlayerHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 30, singlePlayerTextWidth, singlePlayerTextHeight)
+    multiplayerHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + singlePlayerTextHeight + 50, multiplayerTextWidth, multiplayerTextHeight)
 
     if numOfPlayers == 1:
-        singleplayerText = smallHeadingFont.render(">1 player", False, WHITE)
-        singleplayerTextShadow = smallHeadingFont.render(">1 player", False, BLACK)
-        singleplayerTextWidth, singleplayerTextHeight = smallHeadingFont.size(">1 player")
-        
+        singlePlayerText = smallHeadingFont.render(">1 player", False, WHITE)
+        singlePlayerTextShadow = smallHeadingFont.render(">1 player", False, BLACK)
+        singlePlayerTextWidth, singlePlayerTextHeight = smallHeadingFont.size(">1 player")
+
     elif numOfPlayers == 2:
         multiplayerText = smallHeadingFont.render(">2 players", False, WHITE)
         multiplayerTextShadow = smallHeadingFont.render(">2 players", False, BLACK)
         multiplayerTextWidth, multiplayerTextHeight = smallHeadingFont.size(">2 players")
-        
 
     # makes the text white upon hover ---------------------------------
     if playHoverHitbox.collidepoint(mousePos):
-        if singleplayerHitbox.collidepoint(mousePos) and mouseClicked:
+        if singlePlayerHitbox.collidepoint(mousePos) and mouseClicked:
             numOfPlayers = 1
+
         if multiplayerHitbox.collidepoint(mousePos) and mouseClicked:
             numOfPlayers = 2
+
         playText = subTitleFont.render("Play", True, WHITE)
         playTextShadow = subTitleFont.render("Play", False, BLACK)
-        gameWindow.blit(singleplayerTextShadow, (WIDTH/2 - singleplayerTextWidth/2 + 2, titleHeight + HEIGHT * 41/108 + playTextHeight + 2 + 30))
-        gameWindow.blit(singleplayerText, (WIDTH/2 - singleplayerTextWidth/2, titleHeight + HEIGHT * 41/108 + playTextHeight + 30))
-        gameWindow.blit(multiplayerTextShadow, (WIDTH/2 - multiplayerTextWidth/2 + 2, titleHeight + HEIGHT * 41/108 + playTextHeight + 2 + 50 + singleplayerTextHeight))
-        gameWindow.blit(multiplayerText, (WIDTH/2 - multiplayerTextWidth/2, titleHeight + HEIGHT * 41/108 + playTextHeight + 50 + singleplayerTextHeight))
-    
+        gameWindow.blit(singlePlayerTextShadow, (WIDTH / 2 - singlePlayerTextWidth / 2 + 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 2 + 30))
+        gameWindow.blit(singlePlayerText,
+                        (WIDTH / 2 - singlePlayerTextWidth / 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 30))
+        gameWindow.blit(multiplayerTextShadow, (WIDTH / 2 - multiplayerTextWidth / 2 + 2,
+                                                titleHeight + HEIGHT * 41 / 108 + playTextHeight + 2 + 50 + singlePlayerTextHeight))
+        gameWindow.blit(multiplayerText, (WIDTH / 2 - multiplayerTextWidth / 2,
+                                          titleHeight + HEIGHT * 41 / 108 + playTextHeight + 50 + singlePlayerTextHeight))
 
     # starts the game upon hover and click ----------------------------
     if playHitbox.collidepoint(mousePos) and mouseClicked:
         inMenu = False
 
     # line decorations ------------------------------------------------
-    pygame.draw.line(gameWindow, WHITE, (WIDTH/2 - titleWidth/2, 40), (WIDTH/2 + titleWidth/2, 40))
+    pygame.draw.line(gameWindow, WHITE, (WIDTH / 2 - titleWidth / 2, 40), (WIDTH / 2 + titleWidth / 2, 40))
     pygame.draw.line(gameWindow, WHITE, (WIDTH / 2 - titleWidth / 2, 36), (WIDTH / 2 + titleWidth / 2, 36))
-    pygame.draw.line(gameWindow, WHITE, (WIDTH/2 - titleWidth/2, 40 + titleHeight + 8), (WIDTH/2 + titleWidth/2, 40 + titleHeight + 8))
-    pygame.draw.line(gameWindow, WHITE, (WIDTH / 2 - titleWidth / 2, 40 + titleHeight + 12), (WIDTH / 2 + titleWidth / 2, 40 + titleHeight + 12))
+    pygame.draw.line(gameWindow, WHITE, (WIDTH / 2 - titleWidth / 2, 40 + titleHeight + 8),
+                     (WIDTH / 2 + titleWidth / 2, 40 + titleHeight + 8))
+    pygame.draw.line(gameWindow, WHITE, (WIDTH / 2 - titleWidth / 2, 40 + titleHeight + 12),
+                     (WIDTH / 2 + titleWidth / 2, 40 + titleHeight + 12))
 
     # blitting text ---------------------------------------------------
     gameWindow.blit(titleShadow, (WIDTH / 2 - titleWidth / 2 + 12, 52))
-    gameWindow.blit(title, (WIDTH/2 - titleWidth/2, 40))
+    gameWindow.blit(title, (WIDTH / 2 - titleWidth / 2, 40))
 
     gameWindow.blit(playTextShadow, (WIDTH / 2 - playTextWidth / 2 + 4, titleHeight + (HEIGHT * 41 / 108) + 4))
-    gameWindow.blit(playText, (WIDTH/2 - playTextWidth/2, titleHeight + HEIGHT * 41/108))
+    gameWindow.blit(playText, (WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108))
 
     # check for quit events -------------------------------------------
     if checkQuit():
@@ -5916,10 +5952,12 @@ while inMenu:
     # updating screen -------------------------------------------------
     pygame.display.update()
 
-
 # -----------------------------------------------------------------------------
 
-
+# generates the correct number of players
+players = [
+    Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
+]
 
 #######################################################################################################################
 #
@@ -5974,7 +6012,6 @@ while inGame:
             inPlay = False
             endScreen = True
 
-
         # drawing platforms ---------------------------------------------------
         forEachPlayer(players, lambda playerToCheck: level.redrawPlatforms(playerToCheck))
 
@@ -6007,9 +6044,11 @@ while inGame:
             level = generateLevel(playerInList)
 
         # moves background  ---------------------------------------------------
-        # forEachPlayer(players, moveBackground, 0.5)
-        moveBackground(0.5)
+        if anyPlayer(players, lambda playerCheck: playerCheck.x >= 200):
+            moveBackground(2)
 
+        else:
+            moveBackground(0.5)
 
         # accumulates time  ---------------------------------------------------
         time = fpsClock.tick(FPS)
@@ -6038,7 +6077,6 @@ while inGame:
 
         # updating screen  ----------------------------------------------------
         pygame.display.update()
-
 
     # End of game loop ------------------------------------------------------------------------
 
@@ -6102,7 +6140,6 @@ while inGame:
 
     # -------------------------------------------------------------------------
 
-
     ###########################################################################################
     #
     # Restart Loop
@@ -6149,8 +6186,8 @@ while inGame:
         leftArrowTextShadow = subTitleFont.render("<", False, WHITE)
 
         # death messages
-        deathMessageText = deathMessageFont.render(deathMessage[:deathMessageLetters//3], False, WHITE)
-        deathMessageTextShadow = deathMessageFont.render(deathMessage[:deathMessageLetters//3], False, BLACK)
+        deathMessageText = deathMessageFont.render(deathMessage[:deathMessageLetters // 3], False, WHITE)
+        deathMessageTextShadow = deathMessageFont.render(deathMessage[:deathMessageLetters // 3], False, BLACK)
 
         # getting the width and height of the title and restart text ----------
         titleWidth, titleHeight = titleFont.size(titleStr)
@@ -6163,18 +6200,19 @@ while inGame:
 
         leftArrowTextWidth, leftArrowTextHeight = subTitleFont.size("<")
 
-        deathMessageTextWidth, deathMessageTextHeight = deathMessageFont.size(deathMessage[:deathMessageLetters//3])
+        deathMessageTextWidth, deathMessageTextHeight = deathMessageFont.size(deathMessage[:deathMessageLetters // 3])
 
         # setting hitbox for restart button -----------------------------------
-        restartHitbox = pygame.Rect(WIDTH / 2 - restartTextWidth / 2, titleHeight + HEIGHT * 41/108, restartTextWidth, restartTextHeight)
+        restartHitbox = pygame.Rect(WIDTH / 2 - restartTextWidth / 2, titleHeight + HEIGHT * 41 / 108, restartTextWidth, restartTextHeight)
 
         # setting hitbox for exit button --------------------------------------
-        exitHitbox = pygame.Rect(WIDTH / 2 - exitTextWidth / 2, titleHeight + HEIGHT * 41/108, exitTextWidth, exitTextHeight)
+        exitHitbox = pygame.Rect(WIDTH / 2 - exitTextWidth / 2, titleHeight + HEIGHT * 41 / 108, exitTextWidth, exitTextHeight)
 
         # setting hitbox for exit button --------------------------------------
         if showExit:
             rightArrowHitbox = pygame.Rect(WIDTH / 2 + exitTextWidth / 2, titleHeight + HEIGHT * 41 / 108, rightArrowTextWidth, rightArrowTextHeight)
             leftArrowHitbox = pygame.Rect(WIDTH / 2 - exitTextWidth / 2 - leftArrowTextWidth, titleHeight + HEIGHT * 41 / 108, leftArrowTextWidth, leftArrowTextHeight)
+
         else:
             rightArrowHitbox = pygame.Rect(WIDTH / 2 + restartTextWidth / 2, titleHeight + HEIGHT * 41 / 108, rightArrowTextWidth, rightArrowTextHeight)
             leftArrowHitbox = pygame.Rect(WIDTH / 2 - restartTextWidth / 2 - leftArrowTextWidth, titleHeight + HEIGHT * 41 / 108, leftArrowTextWidth, leftArrowTextWidth)
@@ -6207,18 +6245,17 @@ while inGame:
                 showExit = True
             timeSinceArrowPress = timeElapsed
 
-
         # resets and restarts the game upon hover and click -------------------
-        if restartHitbox.collidepoint(mousePos) and mouseClicked and not showExit and timeElapsed - timeSinceArrowPress >= 0.25:
+        if restartHitbox.collidepoint(
+                mousePos) and mouseClicked and not showExit and timeElapsed - timeSinceArrowPress >= 0.25:
             inPlay = True
             endScreen = False
 
             # resetting game ------------------------------------------
             players = [
-                Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, MissileLauncher(), True),
-                Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, MissileLauncher(), False),
+                Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
             ]
-            spawnPlatform = Platform(100, HEIGHT//2 - 100, 100)
+            spawnPlatform = Platform(100, HEIGHT // 2 - 100, 100)
 
             # clearing lists ------------------------------------------
             enemies.clear()
@@ -6258,13 +6295,13 @@ while inGame:
         gameWindow.blit(title, (WIDTH / 2 - titleWidth / 2, 40))
 
         gameWindow.blit(deathMessageTextShadow, (WIDTH / 2 - deathMessageTextWidth / 2 + 4, titleHeight + HEIGHT * 52 / 108 + 4))
-        gameWindow.blit(deathMessageText, (WIDTH / 2 - deathMessageTextWidth / 2,  titleHeight + HEIGHT * 52 / 108))
+        gameWindow.blit(deathMessageText, (WIDTH / 2 - deathMessageTextWidth / 2, titleHeight + HEIGHT * 52 / 108))
 
         # drawing different buttons based on the 'showExit' flag
         if not showExit:
             # restart text
             gameWindow.blit(restartTextShadow, (WIDTH / 2 - restartTextWidth / 2 + 4, titleHeight + HEIGHT * 41 / 108 + 4))
-            gameWindow.blit(restartText, (WIDTH / 2 - restartTextWidth / 2, titleHeight + HEIGHT * 41/108))
+            gameWindow.blit(restartText, (WIDTH / 2 - restartTextWidth / 2, titleHeight + HEIGHT * 41 / 108))
 
             # right arrow text
             gameWindow.blit(rightArrowTextShadow, (WIDTH / 2 + restartTextWidth / 2 + 4, titleHeight + HEIGHT * 41 / 108 + 4))
@@ -6276,8 +6313,8 @@ while inGame:
 
         else:
             # exit text
-            gameWindow.blit(exitTextShadow, (WIDTH / 2 - exitTextWidth / 2 + 4, titleHeight + HEIGHT * 41/108 + 4))
-            gameWindow.blit(exitText, (WIDTH / 2 - exitTextWidth / 2, titleHeight + HEIGHT * 41/108))
+            gameWindow.blit(exitTextShadow, (WIDTH / 2 - exitTextWidth / 2 + 4, titleHeight + HEIGHT * 41 / 108 + 4))
+            gameWindow.blit(exitText, (WIDTH / 2 - exitTextWidth / 2, titleHeight + HEIGHT * 41 / 108))
 
             # right arrow text
             gameWindow.blit(rightArrowTextShadow, (WIDTH / 2 + exitTextWidth / 2 + 4, titleHeight + HEIGHT * 41 / 108 + 4))
@@ -6286,7 +6323,6 @@ while inGame:
             # left arrow text
             gameWindow.blit(leftArrowTextShadow, (WIDTH / 2 - exitTextWidth / 2 - leftArrowTextWidth + 4, titleHeight + HEIGHT * 41 / 108 + 4))
             gameWindow.blit(leftArrowText, (WIDTH / 2 - exitTextWidth / 2 - leftArrowTextWidth, titleHeight + HEIGHT * 41 / 108))
-
 
         # check for quit events -----------------------------------------------
         if checkQuit():
