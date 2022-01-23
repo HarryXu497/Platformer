@@ -1,3 +1,10 @@
+###############################################################################
+# PlatformerTest.py
+# Date: 
+#
+#
+#
+###############################################################################
 import pygame
 from random import randint, uniform, choice
 from typing import Union, Callable, Any
@@ -34,8 +41,8 @@ MOVING_PLATFORM_SPEED = 15  # moving platform speed is inversely proportional to
 
 # Game Window Options ---------------------------------------------------------
 pygame.init()
-WIDTH = 1920
-HEIGHT = 1080
+WIDTH = 1366
+HEIGHT = 768
 gameWindow = pygame.display.set_mode((WIDTH, HEIGHT))
 # gameWindow = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 # WIDTH, HEIGHT = gameWindow.get_size()
@@ -3243,7 +3250,7 @@ class Player(object):
         """
 
         # If 'w' is pressed and can fire ------------------------------------------------------------------------------
-        if (keys[pygame.K_w] and self.WASD) or (keys[pygame.K_DOWN] and not self.WASD):
+        if (keys[pygame.K_w] and self.WASD) or (keys[pygame.K_SLASH] and not self.WASD):
             # records original damage
             originalDamage = self.currentWeapon.damage
 
@@ -3411,7 +3418,7 @@ class Player(object):
         """
         onGround = False
         for platform in levelToCheck.platforms:
-            groundHitbox = pygame.Rect(platform.x, platform.y - 3, platform.length, 2)
+            groundHitbox = pygame.Rect(platform.x + 4, platform.y - 3, platform.length - 8, 2)
             # if platform.x + platform.length + PLAYER_SIZE_X / 2 > self.x > platform.x - PLAYER_SIZE_X / 2 and platform.y + 10 > self.y + PLAYER_SIZE_Y / 2 > platform.y:
             if self.hitbox.colliderect(groundHitbox):
                 self.y = platform.y - PLAYER_SIZE_Y / 2
@@ -3421,15 +3428,15 @@ class Player(object):
                 # If the player is on the ground and on a moving platform, it moves with the platform
                 if onGround and isinstance(platform, VerticalMovingPlatform):
                     if platform.moveDown:
-                        self.y += platform.speed * 2
+                        self.y += platform.speed
                     else:
-                        self.y -= platform.speed * 2
+                        self.y -= platform.speed
 
                 if onGround and isinstance(platform, HorizontalMovingPlatform):
                     if platform.moveRight:
-                        self.x += platform.speed * 2
+                        self.x += platform.speed
                     else:
-                        self.x -= platform.speed * 2
+                        self.x -= platform.speed
 
             # Side collisions
             platformLeftHitbox = pygame.Rect(platform.x, platform.y + 2, 1, platform.width - 4)
@@ -3465,7 +3472,7 @@ class Player(object):
 
                 # draw the '[x]' if the level is the tutorial level ---------------------------
                 if levelNumber == 0 and not chestToCheck.collected:
-                    pressX = scoreFontSmall.render("[x]", True, colour)
+                    pressX = scoreFontSmall.render("[x]/[/]", True, colour)
                     gameWindow.blit(pressX, ((chestToCheck.platform.x + chestToCheck.platform.length / 2 - 20), chestToCheck.platform.y + 16))
 
                 # blitting name to screen -----------------------------------------------------
@@ -3473,7 +3480,7 @@ class Player(object):
                     gameWindow.blit(weaponName, ((chestToCheck.platform.x + chestToCheck.platform.length / 2) - weaponNameLength / 2, chestToCheck.platform.y - 43))
 
                 # picking up the weapon -------------------------------------------------------
-                if (keys[pygame.K_x] and self.WASD) or (keys[pygame.K_SLASH] and not self.WASD):
+                if (keys[pygame.K_x] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD):
                     self.currentWeapon = chestToCheck.weapon
                     if not chestToCheck.collected:
                         pickupWeapon.play()
@@ -3487,7 +3494,7 @@ class Player(object):
                     gameWindow.blit(costRender, (chestToCheck.platform.x + chestToCheck.platform.length / 2 - costRenderLength / 2, chestToCheck.platform.y - 48))
 
                 if ((keys[pygame.K_x] and self.WASD) or (
-                        keys[pygame.K_SLASH] and not self.WASD)) and not chestToCheck.opening:
+                        keys[pygame.K_PERIOD] and not self.WASD)) and not chestToCheck.opening:
                     timeOpened = timeElapsed
                     if coinsCollected >= POTION_COST:
                         coinsCollected -= POTION_COST
@@ -3504,7 +3511,7 @@ class Player(object):
                         gameWindow.blit(upgradeName, ((chestToCheck.platform.x + chestToCheck.platform.length / 2) - upgradeNameLength / 2, chestToCheck.platform.y - 48))
 
                     if ((keys[pygame.K_x] and self.WASD) or (keys[
-                                                                 pygame.K_SLASH] and not self.WASD)) and not chestToCheck.collected and timeElapsed - timeOpened >= 0.25:
+                                                                 pygame.K_PERIOD] and not self.WASD)) and not chestToCheck.collected and timeElapsed - timeOpened >= 0.25:
                         if isinstance(chestToCheck.upgrade, StrengthPotion):
                             if self.damageMultiplier < 1.7:
                                 self.damageMultiplier += round(chestToCheck.upgrade.strength / 100, 2)
@@ -4180,10 +4187,10 @@ class Level(object):
             self.numOfPlatforms += 1
 
             # the chance that an enemy spawns on the platform ---------------------------------------------
-            chanceOfEnemy = randint(1, 3)
+            chanceOfEnemy = randint(1, 5)
 
             # if the last platform is not the spawn platform and 'chanceOfEnemy' is 1 ---------
-            if chanceOfEnemy == 1 and self.platforms[-1] is not self.startPlatform:
+            if chanceOfEnemy in [1, 2] and self.platforms[-1] is not self.startPlatform:
                 # number of enemies and speed of each enemy
                 numberOfEnemies = int(randint(2, 4) // 2)
                 speed = uniform(0.2, 0.4)
@@ -4218,13 +4225,13 @@ class Level(object):
                         enemies.remove(enemy)
 
             # chance of a chest to spawn ------------------------------------------------------------------
-            chanceOfChest = randint(1, 5)
+            chanceOfChest = randint(1, 4)
 
             # if levelNumber == 0(tutorial level), make every possible chest spawn ------------------------
             if levelNumber == 0:
                 chanceOfChest = 1
 
-            if chanceOfChest == 1 and chanceOfEnemy != 1:
+            if chanceOfChest == 1 and chanceOfEnemy not in [1, 2]:
                 # Weapon generation
                 weapon = generateWeapon()
 
@@ -5047,20 +5054,17 @@ def generateLevel(playerToCheck: Player) -> Level:
         if portal.hitbox.colliderect(playerToCheck.hitbox):
 
             # renders text
-            if playerToCheck.WASD:
-                portalText = scoreFontSmall.render("[x] Next Level?", True, colour)
-            else:
-                portalText = scoreFontSmall.render("[/] Next Level?", True, colour)
+            portalText = scoreFontSmall.render("[x]/[/] Next Level?", True, colour)
 
             # blits text
             gameWindow.blit(portalText, (portal.platform.x + portal.platform.length / 2 - 96, portal.platform.y - 118))
 
             # starts the transition to underworld level ---------------------------------------------------------------
-            if ((keys[pygame.K_x] and playerToCheck.WASD) or (keys[pygame.K_SLASH] and not playerToCheck.WASD)) and levelNumber == 5:
+            if ((keys[pygame.K_x] and playerToCheck.WASD) or (keys[pygame.K_PERIOD] and not playerToCheck.WASD)) and levelNumber == 5:
                 levelTransition = True
 
             # resets level - clears lists, resets positions, etc ------------------------------------------------------
-            if ((keys[pygame.K_x] and playerToCheck.WASD) or (keys[pygame.K_SLASH] and not playerToCheck.WASD)) and not levelTransition:
+            if ((keys[pygame.K_x] and playerToCheck.WASD) or (keys[pygame.K_PERIOD] and not playerToCheck.WASD)) and not levelTransition:
                 portalEnter.play()
                 chests.clear()
                 portals.clear()
@@ -5257,7 +5261,7 @@ def checkBulletCollision(playerToCheck: Player) -> None:
         if isinstance(bullet, Icicle) or isinstance(bullet, EnemyBullet) or isinstance(bullet, EnemyLaser):
             if bullet.hitbox.colliderect(playerToCheck.hitbox):
                 # damages player upon collision
-                player.takeDamage(bullet.damage)
+                playerToCheck.takeDamage(bullet.damage)
 
                 # removes bullet if possible
                 if bullet in bullets:
@@ -5342,6 +5346,8 @@ def redrawPlayer(playerToDraw: Player) -> None:
     if not levelTransition:
         playerToDraw.checkCollision()
 
+    if playerToDraw.checkLife():
+        players.remove(playerToDraw)
 
 def redrawEnemies(playerToCheck: Player) -> None:
     """ Draws and move the enemies, as well as collision and deletion
@@ -5353,7 +5359,6 @@ def redrawEnemies(playerToCheck: Player) -> None:
 
     Return => None
     """
-
     global enemyTimeHit
     # checks if enemy is alive
     checkEnemyAlive()
@@ -5361,7 +5366,7 @@ def redrawEnemies(playerToCheck: Player) -> None:
     # draws and move enemy
     drawEnemies()
     moveEnemies()
-
+    
     # records time when hit - for invincibility
     for enemy in enemies:
         enemyHit = playerToCheck.checkEnemyCollision(enemy)
@@ -5373,6 +5378,7 @@ def redrawEnemies(playerToCheck: Player) -> None:
 
     # delete enemies that are finished their death animation
     deleteEnemies()
+
 
 
 def redrawBullets() -> None:
@@ -5636,7 +5642,7 @@ def drawGUI(playerList: list[Player]) -> None:
     for play in playerList:
         drawHealthBar(play, yPos)
         drawWeaponDisplay(play, yPos + 35)
-        yPos += 80
+        yPos += 70
 
     drawCoinDisplay()
     # only draws instructions if the level is the tutorial level and its not finished drawing
@@ -5767,7 +5773,6 @@ level = Level(5)
 
 # Level number - 0 is tutorial
 levelNumber = 0
-
 # if the player if transitioning between levels
 levelTransition = False
 
@@ -5901,6 +5906,7 @@ while inMenu:
 
     # makes the text white upon hover ---------------------------------
     if playHoverHitbox.collidepoint(mousePos):
+
         if singlePlayerHitbox.collidepoint(mousePos) and mouseClicked:
             numOfPlayers = 1
 
@@ -6045,7 +6051,7 @@ while inGame:
 
         # moves background  ---------------------------------------------------
         if anyPlayer(players, lambda playerCheck: playerCheck.x >= 200):
-            moveBackground(2)
+            moveBackground(1)
 
         else:
             moveBackground(0.5)
