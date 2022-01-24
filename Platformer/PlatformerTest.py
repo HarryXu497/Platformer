@@ -67,7 +67,7 @@ ICE_ENEMY_SIZE_Y = 60
 COLLECTIBLE_SIZE = 16
 
 # Speed constants--------------------------------------------------------------
-MOVING_PLATFORM_SPEED = 15  # moving platform speed is inversely proportional to this
+MOVING_PLATFORM_SPEED = 12  # moving platform speed is inversely proportional to this
 
 # Game Window Options ---------------------------------------------------------
 pygame.init()
@@ -427,6 +427,9 @@ class Enemy(object):
         moving, hurt, dead: list[pygame.Surface]
             List of images for when the enemy is moving, hurt or dead. Changes if 'underworldEnemy' is True
 
+        timeHit:
+            Time that the enemy was hit - used in collisions
+
     """
 
     def __init__(self, platform: Platform, speed: float, health: int = 100) -> None:
@@ -440,6 +443,7 @@ class Enemy(object):
         self.moveLeft = True
         self.damaged = False
         self.isDead = False
+        self.timeHit = 0
 
         # Animation Images
         self.moving = [
@@ -1828,7 +1832,7 @@ class LaserCannon(Gun):
             laserFiredSound.play()
 
             # appends bullet to list
-            bullets.append(LaserBeam(x + 4, y + 5, facingLeft, self.damage))
+            bullets.append(LaserBeam(x - 4, y - 10, facingLeft, self.damage, int(x - 10)))
 
             # records time of shot
             self.timeSinceFire = timeElapsed
@@ -1889,7 +1893,7 @@ class LightningStaff(Gun):
         if self.canFire and timeElapsed - self.timeSinceFire > self.fireRate and self.bulletsInMagazine != 0:
 
             # appends bullet to list
-            bullets.append(Lightning(x + 4, y + 5, facingLeft, self.damage))
+            bullets.append(Lightning(x + 4, y + 5, facingLeft, self.damage, int(y + 50)))
 
             # records time of shot
             self.timeSinceFire = timeElapsed
@@ -2232,15 +2236,19 @@ class LaserBeam(Projectile):
 
         damage: int
             The damage caused upon collision of a projectile
+
+        offset: int
+            The starting point of the beam, used to scale the image appropriately
     """
 
-    def __init__(self, x: float, y: float, movingLeft: bool, damage: int) -> None:
+    def __init__(self, x: float, y: float, movingLeft: bool, damage: int, offset: int) -> None:
         super().__init__(x, y, 0, movingLeft, damage)
-        self.hitbox = pygame.Rect(self.x, self.y, WIDTH, 9)
+        self.hitbox = pygame.Rect(self.x, self.y + 6, WIDTH, 20)
         self.loopsSinceFire = 0
-        self.images = [pygame.image.load(f"images/character/laser/cannonLaser/cannonLaser{i}.png") for i in range(1, 6)]
+        self.images = [pygame.image.load(f"images/character/laser/cannonLaser/cannonLaser{i}.png") for i in range(1, 7)]
+        self.offset = offset
         for i in range(len(self.images)):
-            self.images[i] = pygame.transform.scale(self.images[i], (WIDTH, 9))
+            self.images[i] = pygame.transform.scale(self.images[i], (WIDTH - self.offset + 10, 32))
 
     def move(self) -> None:
         """ Rebuilds the hitbox of the laser beam and increments 'loopsSinceFire'
@@ -2252,10 +2260,10 @@ class LaserBeam(Projectile):
         """
         # rebuilds the hitbox
         if self.movingLeft:
-            self.hitbox = pygame.Rect(self.x - WIDTH, self.y, WIDTH, 11)
+            self.hitbox = pygame.Rect(self.x - WIDTH, self.y + 6, WIDTH, 20)
 
         else:
-            self.hitbox = pygame.Rect(self.x, self.y, WIDTH, 11)
+            self.hitbox = pygame.Rect(self.x, self.y + 6, WIDTH, 20)
 
         self.loopsSinceFire += 1
 
@@ -2269,13 +2277,13 @@ class LaserBeam(Projectile):
         """
         # draws the beam left or right depending on the 'movingLeft' boolean
         if self.movingLeft:
-            if self.loopsSinceFire < len(self.images) * 3 - 1:
-                gameWindow.blit(self.images[self.loopsSinceFire // 3], (self.x - WIDTH, self.y))
+            if self.loopsSinceFire < len(self.images) * 5 - 1:
+                gameWindow.blit(pygame.transform.flip(self.images[self.loopsSinceFire // 5], True, False), (self.x - (WIDTH - self.offset + 10), self.y))
             else:
-                gameWindow.blit(self.images[len(self.images) - 1], (self.x - WIDTH, self.y))
+                gameWindow.blit(pygame.transform.flip(self.images[len(self.images) - 1], True, False), (self.x - (WIDTH - self.offset + 10), self.y))
         else:
-            if self.loopsSinceFire < len(self.images) * 3 - 1:
-                gameWindow.blit(self.images[self.loopsSinceFire // 3], (self.x, self.y))
+            if self.loopsSinceFire < len(self.images) * 5 - 1:
+                gameWindow.blit(self.images[self.loopsSinceFire // 5], (self.x, self.y))
             else:
                 gameWindow.blit(self.images[len(self.images) - 1], (self.x, self.y))
 
@@ -2636,16 +2644,19 @@ class Lightning(Projectile):
         damage: int
             The damage caused upon collision of a projectile
 
+        offset: int
+            The ending point of the lightning - used to scale the image appropriately
+
     """
 
-    def __init__(self, x: float, y: float, movingLeft: bool, damage: int) -> None:
+    def __init__(self, x: float, y: float, movingLeft: bool, damage: int, offset: int) -> None:
         super().__init__(x, y, 12, movingLeft, damage)
         self.hitbox = pygame.Rect(self.x - 10, self.y - 10, 26, 32)
         self.explosionHitbox = pygame.Rect(self.x - 20, self.y - 50, 66, 72)
-        self.explosionAnimation = [pygame.image.load(f"images/character/laser/lightning/lightning{i}.png") for i in
-                                   range(1, 6)]
+        self.explosionAnimation = [pygame.image.load(f"images/character/laser/lightning/lightning{i}.png") for i in range(1, 8)]
+        self.offset = offset
         for i in range(len(self.explosionAnimation)):
-            self.explosionAnimation[i] = pygame.transform.scale(self.explosionAnimation[i], (18, HEIGHT))
+            self.explosionAnimation[i] = pygame.transform.scale(self.explosionAnimation[i], (64, HEIGHT))
 
         self.explosionAnimationStage = 0
         self.collided = False
@@ -2683,10 +2694,9 @@ class Lightning(Projectile):
 
         Return => None
         """
-        # draws the beam left or right depending on the 'movingLeft' boolean
         if self.collided:
             self.speedX = 0
-            gameWindow.blit(self.explosionAnimation[int(self.explosionAnimationStage // 10)], (self.x, self.y - HEIGHT))
+            gameWindow.blit(self.explosionAnimation[int(self.explosionAnimationStage // 10)], (self.x, self.y - HEIGHT + 50))
             self.explosionAnimationStage += 1
             if self.explosionAnimationStage == 1:
                 thunderSound.play()
@@ -3138,7 +3148,7 @@ class Player(object):
                 self.speedX = 0
 
         # If 'space' is pressed and the player is touching a block, decrease the speedY ------------------------------
-        if ((keys[pygame.K_SPACE] and self.WASD) or (keys[pygame.K_UP] and not self.WASD)) and self.touchingBlock:
+        if ((keys[pygame.K_w] and self.WASD) or (keys[pygame.K_UP] and not self.WASD)) and self.touchingBlock:
             # Sets the current image to the 'jump' image
             self.currentImage = self.jumpOrFall[0]
 
@@ -3281,7 +3291,7 @@ class Player(object):
         """
 
         # If 'w' is pressed and can fire ------------------------------------------------------------------------------
-        if (keys[pygame.K_w] and self.WASD) or (keys[pygame.K_SLASH] and not self.WASD):
+        if (keys[pygame.K_SPACE] and self.WASD) or (keys[pygame.K_SLASH] and not self.WASD):
             # records original damage
             originalDamage = self.currentWeapon.damage
 
@@ -3432,6 +3442,7 @@ class Player(object):
             self.speedY = -4
             self.y -= 3
             enemy.damaged = True
+            self.invincle = False
             return True
 
         # -------------------------------------------------------------------------------------------------------------
@@ -3501,9 +3512,9 @@ class Player(object):
                 weaponName = scoreFontSmall.render(chestToCheck.weapon.name, True, colour)
                 weaponNameLength = weaponName.get_size()[0]
 
-                # draw the '[x]' if the level is the tutorial level ---------------------------
+                # draw the '[s]' if the level is the tutorial level ---------------------------
                 if levelNumber == 0 and not chestToCheck.collected:
-                    pressX = scoreFontSmall.render("[x]/[.]", True, colour)
+                    pressX = scoreFontSmall.render("[s]/[.]", True, colour)
                     gameWindow.blit(pressX, ((chestToCheck.platform.x + chestToCheck.platform.length / 2 - 20), chestToCheck.platform.y + 16))
 
                 # blitting name to screen -----------------------------------------------------
@@ -3511,7 +3522,7 @@ class Player(object):
                     gameWindow.blit(weaponName, ((chestToCheck.platform.x + chestToCheck.platform.length / 2) - weaponNameLength / 2, chestToCheck.platform.y - 43))
 
                 # picking up the weapon -------------------------------------------------------
-                if (keys[pygame.K_x] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD):
+                if (keys[pygame.K_s] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD):
                     self.currentWeapon = chestToCheck.weapon
                     if not chestToCheck.collected:
                         pickupWeapon.play()
@@ -3524,7 +3535,7 @@ class Player(object):
                     costRenderLength = costRender.get_size()[0]
                     gameWindow.blit(costRender, (chestToCheck.platform.x + chestToCheck.platform.length / 2 - costRenderLength / 2, chestToCheck.platform.y - 48))
 
-                if ((keys[pygame.K_x] and self.WASD) or (
+                if ((keys[pygame.K_s] and self.WASD) or (
                         keys[pygame.K_PERIOD] and not self.WASD)) and not chestToCheck.opening:
                     timeOpened = timeElapsed
                     if coinsCollected >= POTION_COST:
@@ -3541,7 +3552,7 @@ class Player(object):
                     if not chestToCheck.collected and chestToCheck.opening:
                         gameWindow.blit(upgradeName, ((chestToCheck.platform.x + chestToCheck.platform.length / 2) - upgradeNameLength / 2, chestToCheck.platform.y - 48))
 
-                    if ((keys[pygame.K_x] and self.WASD) or (keys[
+                    if ((keys[pygame.K_s] and self.WASD) or (keys[
                                                                  pygame.K_PERIOD] and not self.WASD)) and not chestToCheck.collected and timeElapsed - timeOpened >= 0.25:
                         if isinstance(chestToCheck.upgrade, StrengthPotion):
                             if self.damageMultiplier < 1.7:
@@ -3578,13 +3589,13 @@ class Player(object):
             # display text if portal and player hitbox collide
             if portal.hitbox.colliderect(self.hitbox):
                 # renders text
-                portalText = scoreFontSmall.render("[x]/[.] Next Level?", True, colour)
+                portalText = scoreFontSmall.render("[s]/[.] Next Level?", True, colour)
 
                 # blits text
                 gameWindow.blit(portalText, (portal.platform.x + portal.platform.length / 2 - 96, portal.platform.y - 118))
 
                 # resets level - clears lists, resets positions, etc ------------------------------------------------------
-                if (keys[pygame.K_x] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD):
+                if (keys[pygame.K_s] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD):
                     return True
 
 
@@ -4071,13 +4082,13 @@ class Level(object):
 
     def __init__(self, maxPlatforms: int, background: pygame.Surface = backgroundImage) -> None:
         if background is underworldBackgroundImage:
-            self.startPlatform = Platform(100, HEIGHT // 2 - 100, 100, underworldTile)
+            self.startPlatform = Platform(200, HEIGHT // 2 - 100, 100, underworldTile)
 
         elif background is iceBackgroundImage:
-            self.startPlatform = Platform(100, HEIGHT // 2 - 100, 100, iceTile)
+            self.startPlatform = Platform(200, HEIGHT // 2 - 100, 100, iceTile)
 
         else:
-            self.startPlatform = Platform(100, HEIGHT // 2 - 100, 100)
+            self.startPlatform = Platform(200, HEIGHT // 2 - 100, 100)
 
         self.platforms: list[Union[Platform, HorizontalMovingPlatform, VerticalMovingPlatform]] = [self.startPlatform]
         self.maxPlatforms = maxPlatforms
@@ -4164,7 +4175,7 @@ class Level(object):
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 6) * 20),
                                                self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
                                                (randint(3, 6) * 10),
-                                               choice([i / MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
+                                               choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
 
                 elif movingPlatformChance == 2 and not (
@@ -4174,7 +4185,7 @@ class Level(object):
                         HorizontalMovingPlatform(
                             self.platforms[-1].x + self.platforms[-1].length + (randint(8, 10) * 20),
                             self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
-                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
+                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
@@ -4206,7 +4217,7 @@ class Level(object):
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 7) * 20),
                                                self.platforms[-1].y - (randint(2, 3) * 20), (randint(7, 10) * 20),
                                                (randint(3, 6) * 10),
-                                               choice([i / MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
+                                               choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
 
                 elif movingPlatformChance == 2 and not (
@@ -4216,7 +4227,7 @@ class Level(object):
                         HorizontalMovingPlatform(
                             self.platforms[-1].x + self.platforms[-1].length + (randint(9, 10) * 20),
                             self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20),
-                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(6, 10)]), image)
+                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
@@ -4276,7 +4287,7 @@ class Level(object):
 
             # Removing enemies if they are on the first platform ------------------------------------------
             for enemy in enemies:
-                if enemy.platform is spawnPlatform:
+                if enemy.platform is self.startPlatform:
                     if enemy in enemies:
                         enemies.remove(enemy)
 
@@ -4351,21 +4362,30 @@ class Level(object):
 
         # -------------------------------------------------------------------------------------------------------------
 
-    def redrawPlatforms(self, playerToCheck: Player) -> None:
-        """ Responsible for drawing and moving the player, as well has the weapon cooldown
+    def checkPlayerCollision(self, playerToCheck: Player) -> None:
+        """ Responsible for checking for collision between the platforms and the player
 
         Parameters:
             playerToCheck: Player
                 The player whose weapon damages the enemy
 
-            self: Level
-                The level whose platforms are
+
+        Return => None
+        """
+        playerToCheck.checkPlatformCollision(self)
+    
+    def redrawPlatforms(self) -> None:
+        """ Responsible for drawing, generating, and deleting the platforms, as well has the weapon cooldown
+
+        Parameters:
+            playerToCheck: Player
+                The player whose weapon damages the enemy
+
 
         Return => None
         """
         self.generatePlatforms()
         self.deletePlatforms()
-        playerToCheck.checkPlatformCollision(self)
         self.drawPlatforms()
 
 
@@ -4566,7 +4586,7 @@ class BossLevel(Level):
                     self.platforms.append(
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 6) * 20),
                                                self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
-                                               (randint(3, 6) * 10), choice([i / 10 for i in range(6, 10)]), image)
+                                               (randint(3, 6) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
 
                 elif movingPlatformChance == 2 and not (
@@ -4576,7 +4596,7 @@ class BossLevel(Level):
                         HorizontalMovingPlatform(
                             self.platforms[-1].x + self.platforms[-1].length + (randint(8, 10) * 20),
                             self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
-                            (randint(4, 7) * 10), choice([i / 10 for i in range(6, 10)]), image)
+                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
@@ -4607,7 +4627,7 @@ class BossLevel(Level):
                     self.platforms.append(
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 7) * 20),
                                                self.platforms[-1].y - (randint(2, 3) * 20), (randint(7, 10) * 20),
-                                               (randint(3, 6) * 10), choice([i / 10 for i in range(6, 10)]), image)
+                                               (randint(3, 6) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
 
                 elif movingPlatformChance == 2 and not (
@@ -4617,7 +4637,7 @@ class BossLevel(Level):
                         HorizontalMovingPlatform(
                             self.platforms[-1].x + self.platforms[-1].length + (randint(9, 10) * 20),
                             self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20),
-                            (randint(4, 7) * 10), choice([i / 10 for i in range(6, 10)]), image)
+                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
@@ -4671,7 +4691,7 @@ class BossLevel(Level):
 
             # Removing enemies if they are on the first platform ------------------------------------------
             for enemy in enemies:
-                if enemy.platform is spawnPlatform:
+                if enemy.platform is self.startPlatform:
                     if enemy in enemies:
                         enemies.remove(enemy)
 
@@ -5155,7 +5175,7 @@ def generateLevel(playerList: list[Player]) -> Level:
 
             # resets player location
             for play in playerList:
-                play.x = 150
+                play.x = 250
                 play.y = 200 - PLAYER_SIZE_X
 
                 # resets player speed
@@ -5220,7 +5240,7 @@ def generateLevel(playerList: list[Player]) -> Level:
 
                 # resets player location
                 for play in playerList:
-                    play.x = 150
+                    play.x = 250
                     play.y = 200 - PLAYER_SIZE_X
 
                     # resets player speed
@@ -5239,8 +5259,8 @@ def generateLevel(playerList: list[Player]) -> Level:
 
                 return Level(platformNum, underworldBackgroundImage)
 
-        return level
-        ###########################
+    return level
+
 
 
 ## Weapon generation ##########################################
@@ -5285,8 +5305,7 @@ def checkBulletCollision(playerToCheck: Player) -> None:
         for enemy in enemies:
             # for staffs, which target the closest enemy
             enemyLargeHitbox = pygame.Rect(enemy.x, 0, enemy.enemySizeX, HEIGHT)
-            if enemy.hitbox.colliderect(bullet.hitbox) and not enemy.damaged and not enemy.isDead and not isinstance(
-                    bullet, Icicle) and not isinstance(bullet, Lightning) and not isinstance(bullet, EnemyLaser):
+            if enemy.hitbox.colliderect(bullet.hitbox) and not enemy.damaged and not enemy.isDead and not isinstance(bullet, Icicle) and not isinstance(bullet, Lightning) and not isinstance(bullet, EnemyLaser):
                 # damages enemy if the enemy is not already damaged(invincible) and the bullet is not an icicle
 
                 if isinstance(bullet, Flame):
@@ -5298,7 +5317,7 @@ def checkBulletCollision(playerToCheck: Player) -> None:
                 enemy.damaged = True
 
                 # remove the bullet if possible -------------------------------
-                if bullet in bullets and not isinstance(bullet, LaserBullet) and not enemy.isDead:
+                if bullet in bullets and not isinstance(bullet, LaserBullet) and not isinstance(bullet, LaserBeam) and not enemy.isDead:
                     bullets.remove(bullet)
 
             if enemyLargeHitbox.colliderect(bullet.hitbox) and isinstance(bullet, Lightning):
@@ -5328,7 +5347,7 @@ def checkBulletCollision(playerToCheck: Player) -> None:
                 bullets.remove(bullet)
 
         # removes laser beams -------------------------------------------------
-        if isinstance(bullet, LaserBeam) and bullet.loopsSinceFire == 14:
+        if isinstance(bullet, LaserBeam) and bullet.loopsSinceFire == 30:
             if bullet in bullets:
                 bullets.remove(bullet)
 
@@ -5404,7 +5423,6 @@ def redrawPlayer(playerToDraw: Player) -> None:
 
     Return => None
     """
-    global timeFired, timeThrown
     playerToDraw.move()
     playerToDraw.draw()
     # Fire weapon if possible
@@ -5436,8 +5454,29 @@ def redrawPlayer(playerToDraw: Player) -> None:
         players.remove(playerToDraw)
 
 
-def redrawEnemies(playerToCheck: Player) -> None:
-    """ Draws and move the enemies, as well as collision and deletion
+def redrawEnemies() -> None:
+    """ Draws and move the enemies
+
+    Parameters:
+
+
+
+    Return => None
+    """
+    # checks if enemy is alive
+    checkEnemyAlive()
+
+    # draws and move enemy
+    drawEnemies()
+    moveEnemies()
+
+    # delete enemies that are finished their death animation
+    deleteEnemies()
+    
+
+
+def checkEnemyInvincibilityCooldown(playerToCheck: Player) -> None:
+    """ Makes sure that the collision cooldown is used - makes the enmy invicible for a short duration
 
     Parameters:
         playerToCheck: Player
@@ -5446,25 +5485,16 @@ def redrawEnemies(playerToCheck: Player) -> None:
 
     Return => None
     """
-    global enemyTimeHit
-    # checks if enemy is alive
-    checkEnemyAlive()
-
-    # draws and move enemy
-    drawEnemies()
-    moveEnemies()
-
     # records time when hit - for invincibility
     for enemy in enemies:
         enemyHit = playerToCheck.checkEnemyCollision(enemy)
         if enemyHit and enemy.damaged:
-            enemyTimeHit = timeElapsed
+            enemy.timeHit = timeElapsed
 
-        if (timeElapsed - enemyTimeHit) >= 0.25:
+        if (timeElapsed - enemy.timeHit) >= 0.25:
             enemy.damaged = False
 
-    # delete enemies that are finished their death animation
-    deleteEnemies()
+
 
 
 def redrawBullets() -> None:
@@ -5827,11 +5857,6 @@ FPS = 60
 fpsClock = pygame.time.Clock()
 timeElapsed = 0
 
-# Time when 'something' hit
-timeHit = 0
-enemyTimeHit = 0
-timeFired = 0
-timeThrown = 0
 
 ###############################################################################
 #
@@ -5840,7 +5865,7 @@ timeThrown = 0
 ###############################################################################
 
 # pistol
-PISTOL_FIRE_RATE = 1.5
+PISTOL_FIRE_RATE = 1
 PISTOL_DAMAGE = 40
 
 # machine gun
@@ -5879,11 +5904,9 @@ numOfPlayers = 1
 
 # Player and spawn platform
 players = [
-    Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), True, "p1"),
-    Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), False, "p2"),
+    Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, Pistol(), True, "p1"),
+    Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, Pistol(), False, "p2"),
 ]
-
-spawnPlatform = Platform(100, HEIGHT // 2 - 100, 100)
 
 # lists
 enemies = []
@@ -5948,8 +5971,8 @@ timeSelected = 0
 tutorialLettersToRender = 0
 instructionNum = 0
 timeOfFinishedWriting = 0
-instructions = ["press [a] and [d]/[<] and [>] to move", "press [space]/[^] to jump", "press [w]/[/] to shoot",
-                "press [x]/[.] to pick up weapons"]
+instructions = ["press [a] and [d]/[<] and [>] to move", "press [w]/[^] to jump", "press [space]/[/] to shoot",
+                "press [s]/[.] to pick up weapons"]
 # laser weapon unlock
 weaponUnlockLettersToRender = 0
 weaponUnlockMessage = "laser weapons unlocked"
@@ -6099,7 +6122,7 @@ while inMenu:
 
 # generates the correct number of players
 players = [
-    Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
+    Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
 ]
 
 timeElapsed = 0
@@ -6148,7 +6171,7 @@ while inGame:
         gameWindow.blit(level.background, (0, 0))
 
         # Redraws chests ------------------------------------------------------
-        forEachPlayer(players, lambda play: redrawChest(play))
+        forEachPlayer(players, redrawChest)
 
         # drawing player, and ending game if collision occurs -----------------
         forEachPlayer(players, redrawPlayer)
@@ -6157,14 +6180,20 @@ while inGame:
             inPlay = False
             endScreen = True
 
+        # platforms-player collision ------------------------------------------
+        forEachPlayer(players, level.checkPlayerCollision)
+
         # drawing platforms ---------------------------------------------------
-        forEachPlayer(players, level.redrawPlatforms)
+        level.redrawPlatforms()
 
         # draws portals -------------------------------------------------------
         drawPortals()
 
+        # player-enemies ------------------------------------------------------
+        forEachPlayer(players, checkEnemyInvincibilityCooldown)
+
         # drawing enemies -----------------------------------------------------
-        forEachPlayer(players, redrawEnemies)
+        redrawEnemies()
 
         # draws GUI -----------------------------------------------------------
         drawGUI(players)
@@ -6387,23 +6416,18 @@ while inGame:
 
         # switching from 'exit' to 'play again' upon click
         if (rightArrowHitbox.collidepoint(mousePos) or leftArrowHitbox.collidepoint(mousePos)) and mouseClicked:
-            if showExit:
-                showExit = False
-            else:
-                showExit = True
+            showExit = not showExit
             timeSinceArrowPress = timeElapsed
 
         # resets and restarts the game upon hover and click -------------------
-        if restartHitbox.collidepoint(
-                mousePos) and mouseClicked and not showExit and timeElapsed - timeSinceArrowPress >= 0.25:
+        if restartHitbox.collidepoint(mousePos) and mouseClicked and not showExit and timeElapsed - timeSinceArrowPress >= 0.25:
             inPlay = True
             endScreen = False
 
             # resetting game ------------------------------------------
             players = [
-                Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
+                Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
             ]
-            spawnPlatform = Platform(100, HEIGHT // 2 - 100, 100)
 
             # clearing lists ------------------------------------------
             enemies.clear()
