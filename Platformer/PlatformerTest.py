@@ -1,8 +1,36 @@
+################################################################################
+# ░██████╗░█████╗░██╗░░░██╗██████╗░░█████╗░███████╗░░░░░░░░░█████╗░░█████╗░██████╗░███████╗
+# ██╔════╝██╔══██╗██║░░░██║██╔══██╗██╔══██╗██╔════╝░░░░░░░░██╔══██╗██╔══██╗██╔══██╗██╔════╝
+# ╚█████╗░██║░░██║██║░░░██║██████╔╝██║░░╚═╝█████╗░░░░░░░░░░██║░░╚═╝██║░░██║██║░░██║█████╗░░
+# ░╚═══██╗██║░░██║██║░░░██║██╔══██╗██║░░██╗██╔══╝░░░░░░░░░░██║░░██╗██║░░██║██║░░██║██╔══╝░░
+# ██████╔╝╚█████╔╝╚██████╔╝██║░░██║╚█████╔╝███████╗░░░░░░░░╚█████╔╝╚█████╔╝██████╔╝███████╗
+# ╚═════╝░░╚════╝░░╚═════╝░╚═╝░░╚═╝░╚════╝░╚══════╝░░░░░░░░░╚════╝░░╚════╝░╚═════╝░╚══════╝
 ###############################################################################
-# PlatformerTest.py
-# Date: 
+# Name: PlatformerTest.py
+# Author:
+#   Harry Xu
 #
+# Contributors:
+#   Perry Xu
+#   Jiabao Wu
+#   Amy Song
+#   Sfan Shen
+#   James Fu
+#   Caellum Yip Hoi-Lee
+#   Alan Zhang
+#   Stephen Dong
+#   Sam Shashaani
+#   Mr. Do
 #
+# Date:
+#   Started: 12/21/21
+#   Finished: 1/25/22
+#
+# Description:
+#   A platformer shooter game with 1 or 2 players.
+#   The players jump from platform to platform, finding new weapons and
+#   fighting enemies. There are 3 stages, each with 5 levels, and capped with
+#   a boss fight at the end of each stage.
 #
 ###############################################################################
 import pygame
@@ -12,6 +40,8 @@ from typing import Union, Callable, Any
 # Colours ---------------------------------------------------------------------
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+PURPLE = (128, 0, 255)
+LPURPLE = (148, 41, 255)
 LRED = (255, 200, 200)
 BLACK = (0, 0, 0)
 GREY = (40, 40, 40)
@@ -41,11 +71,11 @@ MOVING_PLATFORM_SPEED = 15  # moving platform speed is inversely proportional to
 
 # Game Window Options ---------------------------------------------------------
 pygame.init()
-WIDTH = 1366
-HEIGHT = 768
-gameWindow = pygame.display.set_mode((WIDTH, HEIGHT))
-# gameWindow = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-# WIDTH, HEIGHT = gameWindow.get_size()
+# WIDTH = 800
+# HEIGHT = 600
+# gameWindow = pygame.display.set_mode((WIDTH, HEIGHT))
+gameWindow = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+WIDTH, HEIGHT = gameWindow.get_size()
 
 
 # Game icon and caption ----------------------------------------
@@ -93,6 +123,9 @@ pauseButtonPressed = pygame.image.load("images/gui/button/pauseButtonPressed.png
 
 # Sounds ----------------------------------------------------------------------
 pygame.mixer.init()
+
+menuSelect = pygame.mixer.Sound("sounds/menu/select.wav")
+menuSelect.set_volume(0.25)
 
 playerHit = pygame.mixer.Sound("sounds/player/playerHit.wav")
 coinCollected = pygame.mixer.Sound("sounds/collectibles/coinCollected.wav")
@@ -1307,7 +1340,7 @@ class MissileLauncher(Gun):
     """
 
     def __init__(self) -> None:
-        super().__init__(6, 160, 4)
+        super().__init__(7.5, 160, 4)
         self.reloadTime = 0.5
         self.canFire = True
         self.timeSinceFire = 0
@@ -2660,7 +2693,7 @@ class Lightning(Projectile):
 
 
 class EnemyProjectile(Projectile):
-    """ The base class of a projectile fired from an enemy, which always does left
+    """ The base class of a projectile fired from an enemy, which always goes left
 
     Attributes:
         x: float
@@ -2961,7 +2994,7 @@ class Player(object):
             The hitbox of the player
 
         timeHit: float
-            The time that the player is hit by an enemy - used for tracking invicibility period
+            The time that the player is hit by an enemy - used for tracking invincibility period
 
         WASD: bool
             Use WASD or Arrow keys
@@ -2993,7 +3026,6 @@ class Player(object):
         self.name = name
         self.nameRender = playerNameFont.render(self.name, False, BLACK)
         self.timeHit = timeElapsed
-
 
         # Animation images
         self.hurt = [
@@ -3206,7 +3238,6 @@ class Player(object):
 
         Return => None
         """
-
         if WIDTH - PLAYER_SIZE_X / 2 < self.x or self.x < 0:
             # Does 10 damages at a time
             self.health -= 10
@@ -3472,7 +3503,7 @@ class Player(object):
 
                 # draw the '[x]' if the level is the tutorial level ---------------------------
                 if levelNumber == 0 and not chestToCheck.collected:
-                    pressX = scoreFontSmall.render("[x]/[/]", True, colour)
+                    pressX = scoreFontSmall.render("[x]/[.]", True, colour)
                     gameWindow.blit(pressX, ((chestToCheck.platform.x + chestToCheck.platform.length / 2 - 20), chestToCheck.platform.y + 16))
 
                 # blitting name to screen -----------------------------------------------------
@@ -3530,6 +3561,31 @@ class Player(object):
 
         if chestToCheck.opening:
             chestToCheck.open()
+
+
+    def checkPortalEnter(self, portalList):
+        """ Checks if the player has entered the portal
+
+        Parameters:
+            portalList: list[Portal]
+                The list of portals that is checked by this function
+
+        Return => Level: The newly generated level
+        """
+        # the colour changes depending on background of the level
+        colour = BLACK if level.background is iceBackgroundImage else WHITE
+        for portal in portalList:
+            # display text if portal and player hitbox collide
+            if portal.hitbox.colliderect(self.hitbox):
+                # renders text
+                portalText = scoreFontSmall.render("[x]/[.] Next Level?", True, colour)
+
+                # blits text
+                gameWindow.blit(portalText, (portal.platform.x + portal.platform.length / 2 - 96, portal.platform.y - 118))
+
+                # resets level - clears lists, resets positions, etc ------------------------------------------------------
+                if (keys[pygame.K_x] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD):
+                    return True
 
 
 #################################################################
@@ -4187,7 +4243,7 @@ class Level(object):
             self.numOfPlatforms += 1
 
             # the chance that an enemy spawns on the platform ---------------------------------------------
-            chanceOfEnemy = randint(1, 5)
+            chanceOfEnemy = randint(1, 4)
 
             # if the last platform is not the spawn platform and 'chanceOfEnemy' is 1 ---------
             if chanceOfEnemy in [1, 2] and self.platforms[-1] is not self.startPlatform:
@@ -4686,6 +4742,36 @@ class BossLevel(Level):
 
         # -------------------------------------------------------------------------------------------------------------
 
+    def drawHealthBar(self, y: int) -> None:
+        """ Draws a health bar for the boss
+
+        Parameters:
+            y: int
+                The Y location of the health bar
+
+        Return => None
+        """
+        # drawing player health in chunks of 25 -------------------------------
+        for j in range(int(self.health // 25)):
+            # health
+            pygame.draw.rect(gameWindow, PURPLE, (200 + (j * 14), y + 3, 14, 30), 0, 0)
+            pygame.draw.rect(gameWindow, LPURPLE, (200 + (j * 14), y + 8, 14, 6), 0, 0)
+
+            # drawing over edges of health bar
+            if j == 0:
+                pygame.draw.rect(gameWindow, PURPLE, (200, y + 3, 6, 30), 0, 0)
+            if j == (self.health // 25) - 1:
+                pygame.draw.rect(gameWindow, PURPLE, (200 + (j * 14) + 8, y + 3, 6, 30), 0, 0)
+
+        # ---------------------------------------------------------------------
+
+        # border --------------------------------------------------------------
+        pygame.draw.rect(gameWindow, BLACK, (196, y, 422, 36), 5, 8)
+        pygame.draw.rect(gameWindow, (64, 64, 64), (196, y - 2, 424, 40), 3, 8)
+
+        # ---------------------------------------------------------------------
+
+
     def redrawPlatforms(self, playerToCheck: Player) -> None:
         """ Responsible for drawing and moving the player, as well has the weapon cooldown
 
@@ -4701,7 +4787,8 @@ class BossLevel(Level):
         playerToCheck.checkPlatformCollision(self)
         self.checkAlive()
         super().drawPlatforms()
-        self.checkCollision(playerToCheck)
+        self.checkCollision()
+        self.drawHealthBar(25)
 
         if not self.levelOver:
             self.changeStage()
@@ -4748,23 +4835,20 @@ class BossLevel(Level):
 
             channel.draw()
 
-    def checkCollision(self, playerToCheck: Player) -> None:
+    def checkCollision(self) -> None:
         """ Checks for collision between the bullets and the open channels
 
         Parameters:
-            playerToCheck: Player
-                The player whose weapon damages the boss
 
 
         Return => None
         """
         for channel in self.hitboxes:
             for bullet in bullets:
-                if bullet.hitbox.colliderect(channel.hitbox) and channel.isOpened and not isinstance(bullet,
-                                                                                                     EnemyProjectile):
+                if bullet.hitbox.colliderect(channel.hitbox) and channel.isOpened and not isinstance(bullet, EnemyProjectile):
                     bossHitSound.stop()
                     bossHitSound.play()
-                    self.health -= int(playerToCheck.currentWeapon.damage // 3)
+                    self.health -= int(bullet.damage // 3)
 
                     for hitbox in self.hitboxes:
                         hitbox.flash()
@@ -4774,10 +4858,20 @@ class BossLevel(Level):
                         bullets.remove(bullet)
 
                 # plays sound if the channel is not open
-                elif bullet.hitbox.colliderect(channel.hitbox) and not (
-                        isinstance(bullet, EnemyProjectile) or isinstance(bullet, EnemyLaser)):
+                elif bullet.hitbox.colliderect(channel.hitbox) and not (isinstance(bullet, EnemyProjectile) or isinstance(bullet, EnemyLaser)):
                     bossMissedSound.stop()
                     bossMissedSound.play()
+
+            for grenade in grenades:
+                if grenade.hitbox.colliderect(channel.hitbox):
+                    if channel.isOpened and not grenade.exploded:
+                        self.health -= int(grenade.damage // 3)
+
+                        for hitbox in self.hitboxes:
+                            hitbox.flash()
+
+                    grenade.exploded = True
+
 
             channel.unFlash()
 
@@ -5033,38 +5127,89 @@ def drawPortals() -> None:
 
 
 ## Level generation ###########################################
-def generateLevel(playerToCheck: Player) -> Level:
+def generateLevel(playerList: list[Player]) -> Level:
     """ Generates a new level
 
     Parameters:
-        playerToCheck: Player
-            The player that is checked by this function
+        playerList: Player
+            The list of players that is checked by this function
 
     Return => Level: The newly generated level
     """
 
     global levelNumber, levelTransition
 
-    # the colour changes depending on background of the level
-    colour = BLACK if level.background is iceBackgroundImage else WHITE
+    for playerToCheck in playerList:
+        if playerToCheck.checkPortalEnter(portals) and levelNumber == 5:
+            levelTransition = True
 
-    for portal in portals:
+        if playerToCheck.checkPortalEnter(portals) and not levelTransition:
 
-        # display text if portal and player hitbox collide
-        if portal.hitbox.colliderect(playerToCheck.hitbox):
+            portalEnter.play()
+            chests.clear()
+            portals.clear()
+            enemies.clear()
+            grenades.clear()
+            bullets.clear()
+            collectibles.clear()
 
-            # renders text
-            portalText = scoreFontSmall.render("[x]/[/] Next Level?", True, colour)
+            # resets player location
+            for play in playerList:
+                play.x = 150
+                play.y = 200 - PLAYER_SIZE_X
 
-            # blits text
-            gameWindow.blit(portalText, (portal.platform.x + portal.platform.length / 2 - 96, portal.platform.y - 118))
+                # resets player speed
+                play.speedX = 0
+                play.speedY = 1
 
-            # starts the transition to underworld level ---------------------------------------------------------------
-            if ((keys[pygame.K_x] and playerToCheck.WASD) or (keys[pygame.K_PERIOD] and not playerToCheck.WASD)) and levelNumber == 5:
-                levelTransition = True
+                # resets acceleration
+                play.accelerationX = 0.25
 
-            # resets level - clears lists, resets positions, etc ------------------------------------------------------
-            if ((keys[pygame.K_x] and playerToCheck.WASD) or (keys[pygame.K_PERIOD] and not playerToCheck.WASD)) and not levelTransition:
+
+            # increments level number
+            levelNumber += 1
+            levelTransition = False
+
+            # reset player health and weapon after they finish the tutorial ---------------
+            if levelNumber == 1:
+                for play in playerList:
+                    play.currentWeapon = Pistol()
+                    play.health = 100
+
+            levelBackgroundImage = backgroundImage
+
+
+            # sets background based on level number
+            if 6 <= levelNumber <= 10:
+                levelBackgroundImage = underworldBackgroundImage
+
+            if 11 <= levelNumber <= 15:
+                # acceleration as the level has 'ice'
+                playerToCheck.accelerationX = 0.15
+                levelBackgroundImage = iceBackgroundImage
+
+            platformNum = levelNumber * 5 + 5
+            if platformNum > MAX_PLATFORMS:
+                platformNum = MAX_PLATFORMS
+
+            if levelNumber == 5 or levelNumber == 10 or levelNumber == 15:
+                return BossLevel(platformNum, levelBackgroundImage)
+
+            return Level(platformNum, levelBackgroundImage)
+
+        # Going into the underworld transition ----------------------------------------------------------------------------
+        if levelTransition:
+            # remove the portal and its platform
+            for portal in portals:
+                if portal.platform in level.platforms:
+                    level.platforms.remove(portal.platform)
+
+                portals.clear()
+
+            # resets level if player has left the screen
+            if playerToCheck.y >= HEIGHT + PLAYER_SIZE_Y + 500:
+                levelTransition = False
+                # resets lists
                 portalEnter.play()
                 chests.clear()
                 portals.clear()
@@ -5074,88 +5219,28 @@ def generateLevel(playerToCheck: Player) -> Level:
                 collectibles.clear()
 
                 # resets player location
-                playerToCheck.x = 150
-                playerToCheck.y = 200 - PLAYER_SIZE_X
+                for play in playerList:
+                    play.x = 150
+                    play.y = 200 - PLAYER_SIZE_X
 
-                # resets player speed
-                playerToCheck.speedX = 0
-                playerToCheck.speedY = 1
+                    # resets player speed
+                    play.speedX = 0
+                    play.speedY = 1
+
+                    # resets acceleration
+                    play.accelerationX = 0.25
 
                 # increments level number
                 levelNumber += 1
-                levelTransition = False
-
-                # reset player health and weapon after they finish the tutorial ---------------
-                if levelNumber == 1:
-                    playerToCheck.currentWeapon = Pistol()
-                    playerToCheck.health = 100
-
-                levelBackgroundImage = backgroundImage
-
-                # resets acceleration and speed
-                for play in players:
-                    play.accelerationX = 0.25
-                    play.speedY = 1
-
-                # sets background based on level number
-                if 6 <= levelNumber <= 10:
-                    levelBackgroundImage = underworldBackgroundImage
-
-                if 11 <= levelNumber <= 15:
-                    # acceleration as the level has 'ice'
-                    for play in players:
-                        play.accelerationX = 0.15
-                    levelBackgroundImage = iceBackgroundImage
 
                 platformNum = levelNumber * 5 + 5
                 if platformNum > MAX_PLATFORMS:
                     platformNum = MAX_PLATFORMS
 
-                if levelNumber == 5 or levelNumber == 10 or levelNumber == 15:
-                    return BossLevel(platformNum, levelBackgroundImage)
+                return Level(platformNum, underworldBackgroundImage)
 
-                return Level(platformNum, levelBackgroundImage)
-
-            # ---------------------------------------------------------------------------------------------------------
-
-    # Going into the underworld transition ----------------------------------------------------------------------------
-    if levelTransition:
-        # remove the portal and its platform
-        for portal in portals:
-            if portal.platform in level.platforms:
-                level.platforms.remove(portal.platform)
-
-            portals.clear()
-
-        # resets level if player has left the screen
-        if playerToCheck.y >= HEIGHT + PLAYER_SIZE_Y + 500:
-            levelTransition = False
-            # resets lists
-            chests.clear()
-            portals.clear()
-            enemies.clear()
-            grenades.clear()
-            bullets.clear()
-            collectibles.clear()
-
-            # resets player location
-            playerToCheck.x = 150
-            playerToCheck.y = 200 - PLAYER_SIZE_X
-
-            # resets player speed
-            playerToCheck.speedX = 0
-            playerToCheck.speedY = 1
-
-            # increments 'levelNumber'
-            levelNumber += 1
-
-            platformNum = levelNumber * 5 + 5
-            if platformNum > MAX_PLATFORMS:
-                platformNum = MAX_PLATFORMS
-
-            return Level(platformNum, underworldBackgroundImage)
-
-    return level
+        return level
+        ###########################
 
 
 ## Weapon generation ##########################################
@@ -5294,8 +5379,7 @@ def checkGrenadeCollision() -> None:
                     grenade.exploded = True
 
                 # Deduct health ---------------------------------------
-                if grenade.exploded and grenade.explosionHitbox.colliderect(
-                        enemy.hitbox) and grenade.explosionAnimationStage == 0:
+                if grenade.exploded and grenade.explosionHitbox.colliderect(enemy.hitbox) and grenade.explosionAnimationStage == 0:
                     enemy.takeDamage(GRENADE_LAUNCHER_DAMAGE)
 
         # Remove grenade when explosion animation ends ----------------
@@ -5327,7 +5411,9 @@ def redrawPlayer(playerToDraw: Player) -> None:
     playerToDraw.fireWeapon()
 
     # Draw the bullet GUI with the time
-    drawMagazineDisplay(playerToDraw, timeElapsed - playerToDraw.currentWeapon.timeSinceFire, playerToDraw.currentWeapon.fireRate, HEIGHT - 50 * (len(players) - (players.index(playerToDraw))))
+    drawMagazineDisplay(playerToDraw, timeElapsed - playerToDraw.currentWeapon.timeSinceFire,
+                        playerToDraw.currentWeapon.fireRate,
+                        HEIGHT - 50 * (len(players) - (players.index(playerToDraw))))
 
     # Invincible delay --------------------------------------------------------
     enemyHit = False
@@ -5349,6 +5435,7 @@ def redrawPlayer(playerToDraw: Player) -> None:
     if playerToDraw.checkLife():
         players.remove(playerToDraw)
 
+
 def redrawEnemies(playerToCheck: Player) -> None:
     """ Draws and move the enemies, as well as collision and deletion
 
@@ -5366,7 +5453,7 @@ def redrawEnemies(playerToCheck: Player) -> None:
     # draws and move enemy
     drawEnemies()
     moveEnemies()
-    
+
     # records time when hit - for invincibility
     for enemy in enemies:
         enemyHit = playerToCheck.checkEnemyCollision(enemy)
@@ -5378,7 +5465,6 @@ def redrawEnemies(playerToCheck: Player) -> None:
 
     # delete enemies that are finished their death animation
     deleteEnemies()
-
 
 
 def redrawBullets() -> None:
@@ -5561,7 +5647,9 @@ def drawMagazineDisplay(playerToCheck: Player, timeSinceFire: float, fireRate: f
     else:
         gameWindow.blit(bulletGUI[4], (WIDTH - 80, y))
     # displays the player name in middle of the bullet
-    gameWindow.blit(playerToCheck.nameRender, (WIDTH - 80 + bulletGUI[0].get_size()[0] / 2, y + bulletGUI[0].get_size()[1] / 2 - playerToCheck.nameRender.get_size()[1] / 2))
+    gameWindow.blit(playerToCheck.nameRender, (WIDTH - 80 + bulletGUI[0].get_size()[0] / 2,
+                                               y + bulletGUI[0].get_size()[1] / 2 - playerToCheck.nameRender.get_size()[
+                                                   1] / 2))
 
 
 def drawWeaponDisplay(playerToCheck: Player, y) -> None:
@@ -5672,22 +5760,62 @@ def checkQuit() -> bool:
     return False
 
 
-def forEachPlayer(playerList: list[Player], func: Callable[..., Any], *args) -> None:
+def forEachPlayer(playerList: list[Player], func: Callable[[Player, ...], Any], *args) -> None:
+    """ Calls 'func' with each player as the argument individually
+
+    Parameters:
+        playerList: list[Player]
+            A list of players, which are passed into the function one by one
+
+        func: Callable[[Player, ...], Any]
+            A function that takes a player, and any number or type of arguments after than, and returns Any.
+            This function will be called on each player in 'playerList'
+
+        *args:
+            optional arguments that are passed if 'func' needs arguments
+
+
+    Return => bool: if the quit event has been detected
+    """
     for playerToCheck in playerList:
-        if not args:
-            func(playerToCheck)
-        else:
-            func(playerToCheck, args[0])
+        func(playerToCheck, *args)
 
 
-def everyPlayer(playerList: list[Player], func: Callable[[Any], bool]) -> bool:
+def everyPlayer(playerList: list[Player], func: Callable[[Player], bool]) -> bool:
+    """ returns if every player in 'playerList' passes the implemented test function('func')
+
+    Parameters:
+        playerList: list[Player]
+            A list of players, which are passed into the function one by one
+
+        func: Callable[[Player, ...], Any]
+            A function that takes a player as an argument and returns a boolean.
+            This function will be called on each player in 'playerList'
+
+
+    Return => bool: if the quit event has been detected
+    """
+    every = True
     for playerToCheck in playerList:
         if not func(playerToCheck):
-            return False
-    return True
+            every = False
+    return every
 
 
-def anyPlayer(playerList: list[Player], func: Callable[[Any], bool]) -> bool:
+def anyPlayer(playerList: list[Player], func: Callable[[Player], bool]) -> bool:
+    """ returns if any player in 'playerList' passes the implemented test function('func')
+
+    Parameters:
+        playerList: list[Player]
+            A list of players, which are passed into the function one by one
+
+        func: Callable[..., Any]
+            A function that takes a player as an argument and returns a boolean.
+            This function will be called on each player in 'playerList'
+
+
+    Return => bool: if the quit event has been detected
+    """
     for playerToCheck in playerList:
         if func(playerToCheck):
             return True
@@ -5769,7 +5897,7 @@ portals = []
 coinsCollected = 0
 
 # initial level
-level = Level(5)
+level = Level(8)
 
 # Level number - 0 is tutorial
 levelNumber = 0
@@ -5814,13 +5942,14 @@ weapons = {
 ## Menu Variables ##
 titleStr = "Source Code"
 titleLettersToRender = 0
+timeSelected = 0
 
 ## Instructions Variables ##
 tutorialLettersToRender = 0
 instructionNum = 0
 timeOfFinishedWriting = 0
-instructions = ["press [a] and [d]/[<] and [>] to move", "press [space]/[^] to jump", "press [w]/[down arrow] to shoot",
-                "press [x]/[/] to pick up weapons"]
+instructions = ["press [a] and [d]/[<] and [>] to move", "press [space]/[^] to jump", "press [w]/[/] to shoot",
+                "press [x]/[.] to pick up weapons"]
 # laser weapon unlock
 weaponUnlockLettersToRender = 0
 weaponUnlockMessage = "laser weapons unlocked"
@@ -5907,24 +6036,28 @@ while inMenu:
     # makes the text white upon hover ---------------------------------
     if playHoverHitbox.collidepoint(mousePos):
 
-        if singlePlayerHitbox.collidepoint(mousePos) and mouseClicked:
+        if singlePlayerHitbox.collidepoint(mousePos) and mouseClicked and timeElapsed - timeSelected >= 0.25:
             numOfPlayers = 1
+            menuSelect.play()
+            timeSelected = timeElapsed
 
-        if multiplayerHitbox.collidepoint(mousePos) and mouseClicked:
+
+        if multiplayerHitbox.collidepoint(mousePos) and mouseClicked and timeElapsed - timeSelected >= 0.25:
             numOfPlayers = 2
+            menuSelect.play()
+            timeSelected = timeElapsed
 
+        # inverting colours
         playText = subTitleFont.render("Play", True, WHITE)
         playTextShadow = subTitleFont.render("Play", False, BLACK)
         gameWindow.blit(singlePlayerTextShadow, (WIDTH / 2 - singlePlayerTextWidth / 2 + 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 2 + 30))
-        gameWindow.blit(singlePlayerText,
-                        (WIDTH / 2 - singlePlayerTextWidth / 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 30))
-        gameWindow.blit(multiplayerTextShadow, (WIDTH / 2 - multiplayerTextWidth / 2 + 2,
-                                                titleHeight + HEIGHT * 41 / 108 + playTextHeight + 2 + 50 + singlePlayerTextHeight))
-        gameWindow.blit(multiplayerText, (WIDTH / 2 - multiplayerTextWidth / 2,
-                                          titleHeight + HEIGHT * 41 / 108 + playTextHeight + 50 + singlePlayerTextHeight))
+        gameWindow.blit(singlePlayerText, (WIDTH / 2 - singlePlayerTextWidth / 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 30))
+        gameWindow.blit(multiplayerTextShadow, (WIDTH / 2 - multiplayerTextWidth / 2 + 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 2 + 50 + singlePlayerTextHeight))
+        gameWindow.blit(multiplayerText, (WIDTH / 2 - multiplayerTextWidth / 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 50 + singlePlayerTextHeight))
 
     # starts the game upon hover and click ----------------------------
     if playHitbox.collidepoint(mousePos) and mouseClicked:
+        menuSelect.play()
         inMenu = False
 
     # line decorations ------------------------------------------------
@@ -5955,6 +6088,10 @@ while inMenu:
     if titleLettersToRender < (len(titleStr) + 1) * 3:
         titleLettersToRender += 1
 
+    # accumulates time  ---------------------------------------------------
+    time = fpsClock.tick(FPS)
+    timeElapsed += time / 1000
+
     # updating screen -------------------------------------------------
     pygame.display.update()
 
@@ -5964,6 +6101,8 @@ while inMenu:
 players = [
     Player(100, 0.25, 5, 2.75, 15, 150, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
 ]
+
+timeElapsed = 0
 
 #######################################################################################################################
 #
@@ -6019,7 +6158,7 @@ while inGame:
             endScreen = True
 
         # drawing platforms ---------------------------------------------------
-        forEachPlayer(players, lambda playerToCheck: level.redrawPlatforms(playerToCheck))
+        forEachPlayer(players, level.redrawPlatforms)
 
         # draws portals -------------------------------------------------------
         drawPortals()
@@ -6046,8 +6185,7 @@ while inGame:
         forEachPlayer(players, redrawCollectibles)
 
         # checks if new level has to be generated -----------------------------
-        for playerInList in players:
-            level = generateLevel(playerInList)
+        level = generateLevel(players)
 
         # moves background  ---------------------------------------------------
         if anyPlayer(players, lambda playerCheck: playerCheck.x >= 200):
@@ -6216,12 +6354,16 @@ while inGame:
 
         # setting hitbox for exit button --------------------------------------
         if showExit:
-            rightArrowHitbox = pygame.Rect(WIDTH / 2 + exitTextWidth / 2, titleHeight + HEIGHT * 41 / 108, rightArrowTextWidth, rightArrowTextHeight)
-            leftArrowHitbox = pygame.Rect(WIDTH / 2 - exitTextWidth / 2 - leftArrowTextWidth, titleHeight + HEIGHT * 41 / 108, leftArrowTextWidth, leftArrowTextHeight)
+            rightArrowHitbox = pygame.Rect(WIDTH / 2 + exitTextWidth / 2, titleHeight + HEIGHT * 41 / 108,
+                                           rightArrowTextWidth, rightArrowTextHeight)
+            leftArrowHitbox = pygame.Rect(WIDTH / 2 - exitTextWidth / 2 - leftArrowTextWidth,
+                                          titleHeight + HEIGHT * 41 / 108, leftArrowTextWidth, leftArrowTextHeight)
 
         else:
-            rightArrowHitbox = pygame.Rect(WIDTH / 2 + restartTextWidth / 2, titleHeight + HEIGHT * 41 / 108, rightArrowTextWidth, rightArrowTextHeight)
-            leftArrowHitbox = pygame.Rect(WIDTH / 2 - restartTextWidth / 2 - leftArrowTextWidth, titleHeight + HEIGHT * 41 / 108, leftArrowTextWidth, leftArrowTextWidth)
+            rightArrowHitbox = pygame.Rect(WIDTH / 2 + restartTextWidth / 2, titleHeight + HEIGHT * 41 / 108,
+                                           rightArrowTextWidth, rightArrowTextHeight)
+            leftArrowHitbox = pygame.Rect(WIDTH / 2 - restartTextWidth / 2 - leftArrowTextWidth,
+                                          titleHeight + HEIGHT * 41 / 108, leftArrowTextWidth, leftArrowTextWidth)
 
         # makes the 'play again' text white upon hover ------------------------
         if restartHitbox.collidepoint(mousePos) and not showExit:
@@ -6275,7 +6417,7 @@ while inGame:
             portals.clear()
 
             # reset level ---------------------------------------------
-            level = Level(10)
+            level = Level(8)
             levelNumber = 0
 
             # if the player if transitioning between levels -----------
