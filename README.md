@@ -1,3 +1,3 @@
 # Platformer
 
-This game was made for Richmond Hill High School's ICS2OG Intro to Computer Studies course
+A Pygame game by Harry Xu for the ICS2OG Intro to Computer Studies course at Richmond Hill High School.
