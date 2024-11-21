@@ -6629,7 +6629,7 @@ while inMenu:
 
 # generates the correct number of players
 players = [
-    Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
+    Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, PlasmaCannon(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
 ]
 
 timeElapsed = 0
