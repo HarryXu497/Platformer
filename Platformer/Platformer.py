@@ -56,7 +56,6 @@ COLLECTIBLE_SIZE = 16
 
 # Speed constants--------------------------------------------------------------
 MOVING_PLATFORM_SPEED = 12  # moving platform speed is inversely proportional to this
-GRAVITY_ACC = 0.1  # the acceleration that the gravity causes
 
 # Game Window Options ---------------------------------------------------------
 pygame.init()
@@ -119,7 +118,7 @@ pygame.mixer.init()
 
 # menu button selection sound
 menuSelect = pygame.mixer.Sound("sounds/menu/select.wav")
-menuSelect.set_volume(0.25)  # reducing volume
+menuSelect.set_volume(0.25) # reducing volume
 
 # player taking damage sound
 playerHit = pygame.mixer.Sound("sounds/player/playerHit.wav")
@@ -129,11 +128,11 @@ coinCollected = pygame.mixer.Sound("sounds/collectibles/coinCollected.wav")
 
 # potion collection sound
 potionCollected = pygame.mixer.Sound("sounds/collectibles/potionCollected.wav")
-potionCollected.set_volume(0.5)  # reducing volume
+potionCollected.set_volume(0.5) # reducing volume
 
 # an error sound that plays when you try to unlock the upgrade chest without enough coins
 notEnoughCoins = pygame.mixer.Sound("sounds/collectibles/notEnoughCoins.wav")
-notEnoughCoins.set_volume(0.2)  # reducing volume
+notEnoughCoins.set_volume(0.2) # reducing volume
 
 ## projectile sounds ##
 # bullet
@@ -231,10 +230,10 @@ class Platform(object):
             The image of the tiled
 
         imageL: pygame.Surface
-            The left image of the platform - a more 'rounded' version of the normal 'image'
+            The left image of the platform - a more 'rounded' verion of the normal 'image'
             
         imageR: pygame.Surface
-            The right image of the platform - a more 'rounded' version of the normal 'image'
+            The right image of the platform - a more 'rounded' verion of the normal 'image'
     """
 
     def __init__(self, x: float, y: float, length: int, image: pygame.Surface = grassTile, width: int = 20) -> None:
@@ -923,7 +922,8 @@ class IceEnemy(Enemy):
         # -------------------------------------------------------------------------------------------------------------
 
         # Rebuilds the hitbox -------------------------------------------------
-        self.hitbox = pygame.Rect(self.x - self.enemySizeX / 2, self.y - self.enemySizeY / 2, self.enemySizeX, self.enemySizeY)
+        self.hitbox = pygame.Rect(self.x - self.enemySizeX / 2, self.y - self.enemySizeY / 2, self.enemySizeX,
+                                  self.enemySizeY)
 
     def takeDamage(self, damage: int) -> None:
         """ Delegates call to super class method
@@ -934,7 +934,7 @@ class IceEnemy(Enemy):
 
         Return => None
         """
-        super().takeDamage(int(damage // 1.5))
+        super().takeDamage(int(damage // 2.5))
 
 
 #################################################################
@@ -1130,7 +1130,6 @@ class AssaultRifle(Gun):
         elif timeElapsed - self.timeSinceFire > self.fireRate and self.bulletsInMagazine == 0:
             self.bulletsInMagazine = self.clipSize
 
-
 class SubMachineGun(Gun):
     """ Base weapon for the sub machine gun, which fires a 'Bullet'
 
@@ -1155,7 +1154,7 @@ class SubMachineGun(Gun):
     """
 
     def __init__(self) -> None:
-        super().__init__(7, 20, 30)
+        super().__init__(7, 18, 30)
         self.canFire = True
         self.reloadTime = 0.03
         self.timeSinceFire = 0
@@ -1186,7 +1185,8 @@ class SubMachineGun(Gun):
             bulletFired.set_volume(0.4)
 
             # appends bullet to list
-            bullets.append(Bullet(x + 4, y + randint(-1, 9), randint(7, 9), facingLeft, self.damage))
+            bullets.append(Bullet(x + 4, y + randint(-1, 9), 8, facingLeft, self.damage))
+
 
             # records time of shot
             self.timeSinceFire = timeElapsed
@@ -1254,6 +1254,7 @@ class MachineGun(Gun):
 
             # appends bullet to list
             bullets.append(Bullet(x + 4, y + randint(-1, 9), 8, facingLeft, self.damage))
+
 
             # records time of shot
             self.timeSinceFire = timeElapsed
@@ -1532,6 +1533,7 @@ class MissileLauncher(Gun):
 class FlameThrower(Gun):
     """ Base weapon for the flamethrower, which fires a 'Flame'
 
+    ...
     Attributes:
         fireRate: float
             The delay between firing bullets
@@ -1544,9 +1546,6 @@ class FlameThrower(Gun):
 
         canFire: bool
             If the player can fire the weapon. Used if the weapon needs to be disabled
-
-        clipSize: int
-            The constant size of the "magazine"
 
         icon: pygame.Surface
             The icon of the weapon when a chest is opened
@@ -1665,7 +1664,6 @@ class PlasmaCannon(Gun):
             # appends bullet to list
             if facingLeft:
                 grenades.append(PlasmaBall(x - 106, y - 8, 8, facingLeft, self.damage))
-
             else:
                 grenades.append(PlasmaBall(x - 16, y - 8, 8, facingLeft, self.damage))
 
@@ -1678,6 +1676,8 @@ class PlasmaCannon(Gun):
         # reload weapon
         elif timeElapsed - self.timeSinceFire > self.fireRate and self.bulletsInMagazine == 0:
             self.bulletsInMagazine = self.clipSize
+
+
 
 
 class LaserPistol(Gun):
@@ -2184,7 +2184,7 @@ class Bullet(Projectile):
         movingLeft: bool
             True if the projectile is moving left and False otherwise
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the bullet
 
         image: pygame.Surface
@@ -2247,7 +2247,7 @@ class ShotgunBullet(Projectile):
         movingLeft: bool
             True if the projectile is moving left and False otherwise
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the shotgun bullet
 
         muzzleFlash: list[pygame.Surface]
@@ -2284,7 +2284,7 @@ class ShotgunBullet(Projectile):
         # Sets the rotation for the image based on if the player if facing left
         self.currentImage = self.muzzleFlash[int(self.muzzleFlashStage // 2)]
 
-        # blits image depending on which way the player is facing -------------
+        # blits image depending on which way the player is facing
         if self.movingLeft:
             gameWindow.blit(pygame.transform.flip(self.currentImage, True, False), (self.x - 45, self.y - 10))
 
@@ -2316,7 +2316,7 @@ class Flame(Projectile):
         movingLeft: bool
             True if the projectile is moving left and False otherwise
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the shotgun bullet
 
         flameImages: list[pygame.Surface]
@@ -2351,14 +2351,14 @@ class Flame(Projectile):
         # Sets the rotation for the image based on if the player if facing left
         self.currentImage = self.flameImages[int(self.flameImageStage)]
 
-        # blits image depending on which way the player is facing -------------
+        # blits image depending on which way the player is facing
         if self.movingLeft:
             gameWindow.blit(pygame.transform.flip(self.currentImage, True, False), (self.x - 110, self.y - 18))
 
         else:
             gameWindow.blit(self.currentImage, (self.x - 10, self.y - 18))
 
-        # Rebuilds hit box depending on the player's direction ----------------
+        # Rebuilds hit box depending on the player's direction
         if self.movingLeft:
             self.hitbox = pygame.Rect(self.x - 85, self.y - 10, 50, 50)
 
@@ -2369,7 +2369,7 @@ class Flame(Projectile):
 
 
 class LaserBullet(Projectile):
-    """ A class representing a laser bullet, which travels across the screen, but also pierces through enemies
+    """ A class representing a laser bullet, whcih travels across the screen, but also pierces through enemies
 
     Attributes:
         x: float
@@ -2384,7 +2384,7 @@ class LaserBullet(Projectile):
         movingLeft: bool
             True if the projectile is moving left and False otherwise
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the laser
 
         image: pygame.Surface
@@ -2443,7 +2443,7 @@ class LaserBeam(Projectile):
         loopsSinceFire: int
             Incremented once every time the function is called. Used to delete bullet after a short time
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the laser
 
         images: pygame.Surface
@@ -2490,20 +2490,15 @@ class LaserBeam(Projectile):
 
         Return => None
         """
-        # draws the beam left or right depending on the 'movingLeft' boolean ------------------------------------------
+        # draws the beam left or right depending on the 'movingLeft' boolean
         if self.movingLeft:
-            # flipped image
             if self.loopsSinceFire < len(self.images) * 5 - 1:
                 gameWindow.blit(pygame.transform.flip(self.images[self.loopsSinceFire // 5], True, False), (self.x - (WIDTH - self.offset + 10), self.y))
-
-            # finished stage
             else:
                 gameWindow.blit(pygame.transform.flip(self.images[len(self.images) - 1], True, False), (self.x - (WIDTH - self.offset + 10), self.y))
         else:
-            # draws normal image
             if self.loopsSinceFire < len(self.images) * 5 - 1:
                 gameWindow.blit(self.images[self.loopsSinceFire // 5], (self.x, self.y))
-
             else:
                 gameWindow.blit(self.images[len(self.images) - 1], (self.x, self.y))
 
@@ -2524,7 +2519,7 @@ class LaserShotgunBullet(Projectile):
         movingLeft: bool
             True if the projectile is moving left and False otherwise
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the shotgun bullet
 
         muzzleFlash: list[pygame.Surface]
@@ -2595,10 +2590,10 @@ class Grenade(Projectile):
         accelerationY: float
             The acceleration of the grenade in the y axis
 
-        explosionHitbox: pygame.Rect
+        explosionHitbox: pygame.Surface
             The box where enemies take damage. Larger than the grenade hitbox
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the grenade
 
         image: pygame.Surface
@@ -2624,7 +2619,8 @@ class Grenade(Projectile):
 
     """
 
-    def __init__(self, x: float, y: float, speedX: float, speedY: float, accelerationY: float, movingLeft: bool, damage: int) -> None:
+    def __init__(self, x: float, y: float, speedX: float, speedY: float, accelerationY: float,
+                 movingLeft: bool, damage: int) -> None:
         super().__init__(x, y, speedX, movingLeft, damage)
         self.speedY = speedY
         self.accelerationY = accelerationY
@@ -2674,8 +2670,6 @@ class Grenade(Projectile):
             self.speedX = 0
             self.speedY = 0
             self.accelerationY = 0
-
-            # plays sound
             if self.explosionAnimationStage == 1:
                 grenadeExplosion.play()
 
@@ -2717,10 +2711,10 @@ class Missile(Grenade):
         accelerationY: float
             The acceleration of the grenade in the y axis
 
-        explosionHitbox: pygame.Rect
+        explosionHitbox: pygame.Surface
             The box where enemies take damage. Larger than the grenade hitbox
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the grenade
 
         image: pygame.Surface
@@ -2838,10 +2832,10 @@ class PlasmaBall(Grenade):
         accelerationY: float
             The acceleration of the grenade in the y axis
 
-        explosionHitbox: pygame.Rect
+        explosionHitbox: pygame.Surface
             The box where enemies take damage. Larger than the grenade hitbox
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the grenade
 
         images: list[pygame.Surface]
@@ -2854,7 +2848,7 @@ class PlasmaBall(Grenade):
             The current animation image of the grenade explosion
 
         imageStage: int
-            The current animation image of the plasma ball
+            The current animtion image of the plasma ball
 
         currentImage: pygame.Surface
             The current image to be blitted
@@ -2924,14 +2918,13 @@ class PlasmaBall(Grenade):
             self.speedX = 0
             self.speedY = 0
             self.accelerationY = 0
-
-            # plays sound
             if self.explosionAnimationStage == 1:
                 grenadeExplosion.play()
 
         else:
             self.currentImage = self.images[int(self.imageStage // 8)]
             self.imageStage += 1
+            
 
     def draw(self):
         """ Draws the bullet at the x and y positions
@@ -2952,8 +2945,9 @@ class PlasmaBall(Grenade):
                 gameWindow.blit(self.currentImage, (self.x, self.y))
 
 
+
 class Lightning(Projectile):
-    """ A class representing a beam of lightning - an "invisible" bullet that damages the
+    """ A class representing a beam of lightning - an "invisble" bullet that damages the
         enemy when it has the same X position as its hitbox
 
     Attributes:
@@ -2963,7 +2957,7 @@ class Lightning(Projectile):
         y: float
             The y position of the projectile
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the beam
 
         explosionAnimation: list[pygame.Surface]
@@ -3090,11 +3084,8 @@ class Icicle(EnemyProjectile):
         speedX: float
             The speed of the projectile in the x direction
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the icicle
-
-        image: pygame.Surface:
-            the image being blitted
 
         damage: int
             The damage caused upon collision of a projectile
@@ -3150,11 +3141,8 @@ class EnemyBullet(EnemyProjectile):
         speedX: float
             The speed of the projectile in the x direction
 
-        hitbox: pygame.Rect
-            The hitbox of the bullet
-
-        image: pygame.Surface:
-            the image being blitted
+        hitbox: pygame.Surface
+            The hitbox of the icicle
 
         damage: int
             The damage caused upon collision of a projectile
@@ -3205,7 +3193,7 @@ class EnemyLaser(Projectile):
         x: float
             The x position of the projectile
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the beam
 
         explosionAnimation: list[pygame.Surface]
@@ -3320,9 +3308,6 @@ class Player(object):
         speedY: float
             the speed of the player on the vertical plane.
 
-        gravAccel: float
-            The acceleration on the player cause by gravity
-
         touchingBlock: bool
             True if the player is touching a platform
 
@@ -3347,7 +3332,7 @@ class Player(object):
         damageMultiplier: float
             The increase in damage from a player; "strength"
 
-        hitbox: pygame.Rect
+        hitbox: pygame.Surface
             The hitbox of the player
 
         timeHit: float
@@ -3374,7 +3359,6 @@ class Player(object):
         self.maxSpeedY = maxSpeedY
         self.speedX = 0
         self.speedY = 0
-        self.gravAccel = GRAVITY_ACC
         self.touchingBlock = False
         self.invincible = False
         self.facingLeft = False
@@ -3468,31 +3452,30 @@ class Player(object):
                     # Makes acceleration slower if the player is in the air
                     self.speedX -= self.accelerationX / 4
 
-            # Increments the running animation stage and sets the idle stage to 0 -------------------------
+            # Increments the running animation stage and sets the idle stage to 0
             self.runningStage += 1
             self.idleStage = 0
 
-        # If neither 'a' or 'd' are pressed, slowly decreases/increase speed to 0 -------------------------------------
+
+        # If neither 'a' or 'd' are pressed, slowly decreases/increase speed to 0
         else:
-            # decelerate by half of the set accelerationX -------------------------------------------------
+            # decelerate by half of the set accelerationX
             if self.speedX < 0:
                 # if the current level is the ice level, decrease deceleration
                 if level.background is iceBackgroundImage and self.touchingBlock:
                     self.speedX += self.accelerationX / 6
-
                 else:
                     self.speedX += self.accelerationX / 2
 
-            # decelerate by half of the set accelerationX -------------------------------------------------
+            # decelerate by half of the set accelerationX
             elif self.speedX > 0:
                 # if the current level is the ice level, decrease deceleration
                 if level.background is iceBackgroundImage and self.touchingBlock:
                     self.speedX -= self.accelerationX / 6
-
                 else:
                     self.speedX -= self.accelerationX / 2
 
-            # if speed is close to 0, set the speed to 0 --------------------------------------------------
+            # if speed is close to 0, set the speed to 0
             if self.accelerationX * 5 > self.speedX > -self.accelerationX * 5:
                 self.speedX = 0
 
@@ -3509,7 +3492,7 @@ class Player(object):
 
         # If the current speed is lower or equal to the max speed and touchingBlock, increase the speed (gravity) -----
         if not self.touchingBlock and self.speedY <= self.maxSpeedY:
-            self.speedY += self.gravAccel
+            self.speedY += 0.10
         else:
             self.speedY = 0
 
@@ -3531,7 +3514,6 @@ class Player(object):
             # The majority of the 'idle' animation is the first image
             if self.idleStage < 80:
                 self.currentImage = pygame.transform.flip(self.idle[0], True, False)
-
             else:
                 # 1/5 of the idle time is the second image
                 self.currentImage = pygame.transform.flip(self.idle[1], True, False)
@@ -3543,6 +3525,7 @@ class Player(object):
         if self.speedY < 0.1 and not self.touchingBlock and not self.facingLeft:
             self.currentImage = self.jumpOrFall[1]
 
+
         # If jumping, use the jumping image facing right --------------------------------------------------------------
         elif self.speedY > 1.2 and not self.touchingBlock and not self.facingLeft:
             self.currentImage = self.jumpOrFall[0]
@@ -3551,13 +3534,14 @@ class Player(object):
         if self.speedY < 0 and not self.touchingBlock and self.facingLeft:
             self.currentImage = pygame.transform.flip(self.jumpOrFall[1], True, False)
 
+
         # If jumping, use the jumping image facing right --------------------------------------------------------------
         elif self.speedY > 1.2 and not self.touchingBlock and self.facingLeft:
             self.currentImage = pygame.transform.flip(self.jumpOrFall[0], True, False)
 
         # If invincible, use the 'hurt' image -------------------------------------------------------------------------
         if self.invincible:
-            # flip the image if facing left -----------------------------------
+            # flip the image if facing left
             if self.facingLeft:
                 self.currentImage = pygame.transform.flip(self.hurt[0], True, False)
 
@@ -3700,7 +3684,8 @@ class Player(object):
         """
         global coinsCollected
         # creating hitbox
-        collectibleHitbox = pygame.Rect(collectibleToCheck.x - COLLECTIBLE_SIZE / 2, collectibleToCheck.y - COLLECTIBLE_SIZE / 2, COLLECTIBLE_SIZE, COLLECTIBLE_SIZE)
+        collectibleHitbox = pygame.Rect(collectibleToCheck.x - COLLECTIBLE_SIZE / 2,
+                                        collectibleToCheck.y - COLLECTIBLE_SIZE / 2, COLLECTIBLE_SIZE, COLLECTIBLE_SIZE)
 
         # If the collectible is an instance of a Coin, increment the score and collect the collectible
         if isinstance(collectibleToCheck, Coin):
@@ -3720,9 +3705,11 @@ class Player(object):
         Return => bool: whether there is a collision or not
         """
         # Gets the enemy hitboxes -------------------------------------------------------------------------------------
-        enemyHitboxL = pygame.Rect(enemy.x - enemy.enemySizeX / 2, enemy.y - enemy.enemySizeY / 2, enemy.enemySizeX / 2, enemy.enemySizeY)
+        enemyHitboxL = pygame.Rect(enemy.x - enemy.enemySizeX / 2, enemy.y - enemy.enemySizeY / 2, enemy.enemySizeX / 2,
+                                   enemy.enemySizeY)
         enemyHitboxR = pygame.Rect(enemy.x, enemy.y - enemy.enemySizeY / 2, enemy.enemySizeX / 2, enemy.enemySizeY)
-        enemyHitboxTop = pygame.Rect(enemy.x - enemy.enemySizeX / 2 + 15, enemy.y - enemy.enemySizeY / 2 - 5, enemy.enemySizeX - 30, 2)
+        enemyHitboxTop = pygame.Rect(enemy.x - enemy.enemySizeX / 2 + 15, enemy.y - enemy.enemySizeY / 2 - 5,
+                                     enemy.enemySizeX - 30, 2)
 
         # -------------------------------------------------------------------------------------------------------------
 
@@ -3731,10 +3718,8 @@ class Player(object):
             # sets damage based on enemy type
             if isinstance(enemy, UnderworldEnemy):
                 damage = 15
-
             elif isinstance(enemy, IceEnemy):
                 damage = 20
-
             else:
                 damage = 10
 
@@ -3744,12 +3729,12 @@ class Player(object):
             self.y = enemy.y - PLAYER_SIZE_Y - 4
             # sets knockback based on enemy type
             if isinstance(enemy, UnderworldEnemy) or isinstance(enemy, IceEnemy):
-                knockback = -3.5
+                knockback = -4
             else:
                 knockback = -3
 
             self.speedX = knockback
-            self.speedY = -0.2
+            self.speedY = -0.05
             self.touchingBlock = False
             return True
 
@@ -3772,12 +3757,12 @@ class Player(object):
 
             # sets knockback based on enemy type
             if isinstance(enemy, UnderworldEnemy) or isinstance(enemy, IceEnemy):
-                knockback = 3.5
+                knockback = 4
             else:
                 knockback = 3
 
             self.speedX = knockback
-            self.speedY = -0.2
+            self.speedY = -0.05
             self.touchingBlock = False
             return True
 
@@ -3789,7 +3774,7 @@ class Player(object):
             self.speedY = -4
             self.y -= 3
             enemy.damaged = True
-            self.invincible = False
+            self.invincle = False
             return True
 
         # -------------------------------------------------------------------------------------------------------------
@@ -3805,50 +3790,39 @@ class Player(object):
 
         Return => None
         """
-        # onGround is false by default
         onGround = False
-
-        # iterates through every platform
         for platform in levelToCheck.platforms:
-
-            # builds a hitbox based on the platform's location
             groundHitbox = pygame.Rect(platform.x + 4, platform.y - 3, platform.length - 8, 2)
-
-            # sets players y location upon collision
+            # if platform.x + platform.length + PLAYER_SIZE_X / 2 > self.x > platform.x - PLAYER_SIZE_X / 2 and platform.y + 10 > self.y + PLAYER_SIZE_Y / 2 > platform.y:
             if self.hitbox.colliderect(groundHitbox):
                 self.y = platform.y - PLAYER_SIZE_Y / 2
-
-                # sets speedY to 0
                 self.speedY = 0
-
-                # sets onGround to True
                 onGround = True
 
-                # If the player is on the ground and on a vertical moving platform, it moves vertically with the platform
+                # If the player is on the ground and on a moving platform, it moves with the platform
                 if onGround and isinstance(platform, VerticalMovingPlatform):
                     if platform.moveDown:
                         self.y += platform.speed
-
                     else:
                         self.y -= platform.speed
 
-                # If the player is on the ground and on a horizontal moving platform, it moves horizontally with the platform
                 if onGround and isinstance(platform, HorizontalMovingPlatform):
                     if platform.moveRight:
                         self.x += platform.speed
-
                     else:
                         self.x -= platform.speed
 
-            # Side collisions hitboxes
+            # Side collisions
             platformLeftHitbox = pygame.Rect(platform.x, platform.y + 2, 1, platform.width - 4)
             platformRightHitbox = pygame.Rect(platform.x + platform.length - 1, platform.y + 2, 1, platform.width - 4)
 
             if self.hitbox.colliderect(platformLeftHitbox) or self.hitbox.colliderect(platformRightHitbox):
                 self.speedX = 0
 
-        # sets 'touchingBlock' to 'onGround'
         self.touchingBlock = onGround
+
+        # if self.x >= 200:
+        #     moveBackground(1)
 
     def checkChestCollision(self, chestToCheck):
         """ Checks if the player has collided with any chests
@@ -3872,12 +3846,8 @@ class Player(object):
 
                 # draw the '[s]' if the level is the tutorial level ---------------------------
                 if levelNumber == 0 and not chestToCheck.collected:
-                    # rendering text
                     pressX = scoreFontSmall.render("[s]/[.]", True, colour)
-                    pressXWidth = scoreFontSmall.size("[s]/[.]")[0]
-
-                    # bltis text
-                    gameWindow.blit(pressX, ((chestToCheck.platform.x + chestToCheck.platform.length / 2 - pressXWidth / 2), chestToCheck.platform.y + 16))
+                    gameWindow.blit(pressX, ((chestToCheck.platform.x + chestToCheck.platform.length / 2 - 20), chestToCheck.platform.y + 16))
 
                 # blitting name to screen -----------------------------------------------------
                 if not chestToCheck.collected:
@@ -3893,62 +3863,40 @@ class Player(object):
             # Displaying name of upgrade if the chest is an instance of 'UpgradeChest' --------------------------------
             if isinstance(chestToCheck, UpgradeChest):
                 if not chestToCheck.opening:
-                    # renders the cost of the chest
                     costRender = scoreFontSmall.render(f"{POTION_COST} coins", True, colour)
-
-                    # gets the width
                     costRenderLength = costRender.get_size()[0]
-
-                    # blits the render
                     gameWindow.blit(costRender, (chestToCheck.platform.x + chestToCheck.platform.length / 2 - costRenderLength / 2, chestToCheck.platform.y - 48))
 
-                # if the correct keys are pressed and the chest has not been opened------------------------
-                if ((keys[pygame.K_s] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD)) and not chestToCheck.opening:
-                    timeOpened = timeElapsed  # records time of opening
-
-                    # deducts coins if possible -------------------------------
+                if ((keys[pygame.K_s] and self.WASD) or (
+                        keys[pygame.K_PERIOD] and not self.WASD)) and not chestToCheck.opening:
+                    timeOpened = timeElapsed
                     if coinsCollected >= POTION_COST:
                         coinsCollected -= POTION_COST
                         chestToCheck.opening = True
-
-                    # plays sound ---------------------------------------------
                     else:
                         notEnoughCoins.stop()
                         notEnoughCoins.play()
 
                 else:
-                    # renders the upgrade name
                     upgradeName = scoreFontSmall.render(chestToCheck.upgrade.name, True, colour)
-
-                    # width of the render
                     upgradeNameLength = upgradeName.get_size()[0]
 
-                    # bit the upgrade name if the chest has been opened but not collected -----------------
                     if not chestToCheck.collected and chestToCheck.opening:
                         gameWindow.blit(upgradeName, ((chestToCheck.platform.x + chestToCheck.platform.length / 2) - upgradeNameLength / 2, chestToCheck.platform.y - 48))
 
-                    # If you can collect the potion - correct keys, not collected, cooldown passed --------
-                    if ((keys[pygame.K_s] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD)) and not chestToCheck.collected and timeElapsed - timeOpened >= 0.25:
-                        # strength potion -------------------------------------
+                    if ((keys[pygame.K_s] and self.WASD) or (keys[
+                                                                 pygame.K_PERIOD] and not self.WASD)) and not chestToCheck.collected and timeElapsed - timeOpened >= 0.25:
                         if isinstance(chestToCheck.upgrade, StrengthPotion):
-                            # changes 'damageMultiplier'
                             if self.damageMultiplier < 1.7:
                                 self.damageMultiplier += round(chestToCheck.upgrade.strength / 100, 2)
                             else:
                                 self.damageMultiplier = 1.7
 
-                        # health potion ---------------------------------------
                         if isinstance(chestToCheck.upgrade, HealthPotion):
-                            # changes 'health'
                             if self.health + chestToCheck.upgrade.health > 100:
                                 self.health = 100
                             else:
                                 self.health += chestToCheck.upgrade.health
-
-                        # jump potion -----------------------------------------
-                        if isinstance(chestToCheck.upgrade, JumpPotion):
-                            # changes 'acceleration'
-                            self.accelerationY += chestToCheck.upgrade.boost / 100
 
                         if not chestToCheck.collected:
                             potionCollected.play()
@@ -3956,6 +3904,7 @@ class Player(object):
 
         if chestToCheck.opening:
             chestToCheck.open()
+
 
     def checkPortalEnter(self, portalList):
         """ Checks if the player has entered the portal
@@ -3968,8 +3917,6 @@ class Player(object):
         """
         # the colour changes depending on background of the level
         colour = BLACK if level.background is iceBackgroundImage else WHITE
-
-        # checks every portal -----------------------------------------------------------------------------
         for portal in portalList:
             # display text if portal and player hitbox collide
             if portal.hitbox.colliderect(self.hitbox):
@@ -3982,7 +3929,6 @@ class Player(object):
                 # resets level - clears lists, resets positions, etc ------------------------------------------------------
                 if (keys[pygame.K_s] and self.WASD) or (keys[pygame.K_PERIOD] and not self.WASD):
                     return True
-        return False
 
 
 #################################################################
@@ -4164,15 +4110,10 @@ class StrengthPotion(UpgradePotion):
         y: float
             The y position of the collectible
 
-        strength: int
-            the percentage to increase the damage the player does
-
     """
 
     def __init__(self, x: float, y: float, strength: int) -> None:
         self.strength = strength
-
-        # setting images based on the strength
         if self.strength <= 3:
             image = pygame.image.load("images/potion/strengthPotion/emptyPotion.png")
 
@@ -4195,15 +4136,10 @@ class HealthPotion(UpgradePotion):
         y: float
             The y position of the collectible
 
-        health: int
-            The amount to heal by
-
     """
 
     def __init__(self, x, y, health):
         self.health = health
-
-        # setting images based on the health
         if self.health <= 10:
             image = pygame.image.load("images/potion/healthPotion/emptyPotion.png")
 
@@ -4215,41 +4151,13 @@ class HealthPotion(UpgradePotion):
         super().__init__(x, y, image, f"+{self.health} health")
 
 
-class JumpPotion(UpgradePotion):
-    """ A class representing a jump potion, inheriting from a upgrade potion
-        Increases the y acceleration of the player
-
-    Attributes:
-        x: float
-            The x position of the collectible
-
-        y: float
-            The y position of the collectible
-
-    """
-
-    def __init__(self, x, y, boost):
-        self.boost = boost
-
-        # setting images based on the boost
-        if self.boost <= 6:
-            image = pygame.image.load("images/potion/jumpPotion/emptyPotion.png")
-
-        elif self.boost <= 8:
-            image = pygame.image.load("images/potion/jumpPotion/halfPotion.png")
-
-        else:
-            image = pygame.image.load("images/potion/jumpPotion/fullPotion.png")
-        super().__init__(x, y, image, f"+{self.boost} jump")
-
-
 #################################################################
 #                                                               #
 # Chests                                                        #
 #                                                               #
 #################################################################
 class Chest(object):
-    """ A class representing a chest, which by default holds nothing, but is extended by UpgradeChest and WeaponChest
+    """ A class representing a chest, which holds a weapon
 
         Attributes:
             platform: Platform
@@ -4262,7 +4170,7 @@ class Chest(object):
                 If the chest is collected or not
 
             opening: bool
-                If the chest if opening or not. Used to play the chest open sound only once
+                If the chest if opening or not. Used to play the chet open sound only once
 
     """
 
@@ -4355,9 +4263,6 @@ class UpgradeChest(Chest):
     Attributes:
         platform: Platform
             The platform the chest spawns on
-
-        upgrade: UpgradePotion
-            The upgrade potion held by the chest, which can be collected by the player
 
         images: list[pygame.Surface]
             The images for the animated chest opening
@@ -4487,8 +4392,7 @@ class Portal(object):
 #                                                               #
 #################################################################
 class Level(object):
-    """ An object representing an in-game level - consists of many object. "wraps" platforms, backgrounds and portals
-        into a separate "container"
+    """ An object representing an in-game level
 
     Attributes:
         platforms: list[Platforms]
@@ -4503,6 +4407,8 @@ class Level(object):
 
         background: pygame.Surface
             The background of the level
+
+
 
     """
 
@@ -4598,9 +4504,9 @@ class Level(object):
                 # if 'movingPlatformChance' is 1, make a moving Platform ----------------------
                 if movingPlatformChance == 1 and not isinstance(self.platforms[-1], HorizontalMovingPlatform):
                     self.platforms.append(
-                        VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(4, 6) * 20),
-                                               self.platforms[-1].y + (randint(2, 4) * 20), (randint(8, 12) * 20),
-                                               (randint(4, 8) * 10),
+                        VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 6) * 20),
+                                               self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
+                                               (randint(3, 6) * 10),
                                                choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
 
@@ -4610,28 +4516,28 @@ class Level(object):
                     self.platforms.append(
                         HorizontalMovingPlatform(
                             self.platforms[-1].x + self.platforms[-1].length + (randint(8, 10) * 20),
-                            self.platforms[-1].y + (randint(2, 4) * 20), (randint(8, 12) * 20),
-                            (randint(5, 8) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
+                            self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20),
+                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
-                    # make new platform a random distance from the right most point of horizontally moving platform
+                    # make new platform a random distance from the left most point of horizontally moving platform
                     if isinstance(self.platforms[-1], HorizontalMovingPlatform):
                         self.platforms.append(
                             Platform(self.platforms[-1].lowerBound + self.platforms[-1].length + (randint(5, 8) * 20),
-                                     self.platforms[-1].y + (randint(2, 4) * 20), (randint(8, 12) * 20), image)
+                                     self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20), image)
                         )
 
                     # make new platform a random distance from the lowest point of vertically moving platform
                     elif isinstance(self.platforms[-1], VerticalMovingPlatform):
                         self.platforms.append(
                             Platform(self.platforms[-1].x + self.platforms[-1].length + (randint(5, 8) * 20),
-                                     self.platforms[-1].lowerBound + (randint(2, 4) * 20), (randint(8, 12) * 20), image)
+                                     self.platforms[-1].lowerBound + (randint(2, 4) * 20), (randint(7, 10) * 20), image)
                         )
                     else:
                         self.platforms.append(
-                            Platform(self.platforms[-1].x + self.platforms[-1].length + (randint(5, 7) * 20),
-                                     self.platforms[-1].y + (randint(2, 4) * 20), (randint(8, 12) * 20), image)
+                            Platform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 6) * 20),
+                                     self.platforms[-1].y + (randint(2, 4) * 20), (randint(7, 10) * 20), image)
                         )
 
             # if 'higherOrLower' is 0, make the platform higher than the current one ----------------------
@@ -4641,8 +4547,8 @@ class Level(object):
                 if movingPlatformChance == 1 and not isinstance(self.platforms[-1], HorizontalMovingPlatform):
                     self.platforms.append(
                         VerticalMovingPlatform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 7) * 20),
-                                               self.platforms[-1].y - (randint(2, 3) * 20), (randint(8, 12) * 20),
-                                               (randint(4, 7) * 10),
+                                               self.platforms[-1].y - (randint(2, 3) * 20), (randint(7, 10) * 20),
+                                               (randint(3, 6) * 10),
                                                choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
 
@@ -4652,41 +4558,41 @@ class Level(object):
                     self.platforms.append(
                         HorizontalMovingPlatform(
                             self.platforms[-1].x + self.platforms[-1].length + (randint(9, 10) * 20),
-                            self.platforms[-1].y - (randint(2, 4) * 20), (randint(8, 12) * 20),
-                            (randint(5, 8) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
+                            self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20),
+                            (randint(4, 7) * 10), choice([i / MOVING_PLATFORM_SPEED for i in range(5, 20)]), image)
                     )
                 # else make a normal platform -------------------------------------------------
                 else:
-                    # make new platform a random distance from the right most point of horizontally moving platform
+                    # make new platform a random distance from the left most point of horizontally moving platform
                     if isinstance(self.platforms[-1], HorizontalMovingPlatform):
                         self.platforms.append(
                             Platform(self.platforms[-1].lowerBound + self.platforms[-1].length + (randint(5, 8) * 20),
-                                     self.platforms[-1].y - (randint(2, 4) * 20), (randint(8, 12) * 20), image)
+                                     self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20), image)
                         )
 
                     # make new platform a random distance from the highest point of vertically moving platform
                     elif isinstance(self.platforms[-1], VerticalMovingPlatform):
                         self.platforms.append(
                             Platform(self.platforms[-1].x + self.platforms[-1].length + (randint(5, 8) * 20),
-                                     self.platforms[-1].upperBound - (randint(1, 3) * 20), (randint(8, 12) * 20), image)
+                                     self.platforms[-1].upperBound - (randint(1, 3) * 20), (randint(7, 10) * 20), image)
                         )
                     else:
                         self.platforms.append(
-                            Platform(self.platforms[-1].x + self.platforms[-1].length + (randint(5, 7) * 20),
-                                     self.platforms[-1].y - (randint(2, 4) * 20), (randint(8, 12) * 20), image)
+                            Platform(self.platforms[-1].x + self.platforms[-1].length + (randint(3, 6) * 20),
+                                     self.platforms[-1].y - (randint(2, 4) * 20), (randint(7, 10) * 20), image)
                         )
 
             # increments 'numOfPlatforms' ---------------------------------
             self.numOfPlatforms += 1
 
             # the chance that an enemy spawns on the platform ---------------------------------------------
-            chanceOfEnemy = randint(1, 5)
+            chanceOfEnemy = randint(1, 4)
 
             # if the last platform is not the spawn platform and 'chanceOfEnemy' is 1 ---------
             if chanceOfEnemy in [1, 2] and self.platforms[-1] is not self.startPlatform:
                 # number of enemies and speed of each enemy
                 numberOfEnemies = int(randint(2, 4) // 2)
-                speed = uniform(0.3, 0.5)
+                speed = uniform(0.2, 0.4)
 
                 # generate the 'numberOfEnemies' number of enemies, depending on background --
                 for j in range(numberOfEnemies):
@@ -4753,26 +4659,19 @@ class Level(object):
                 )
 
             # generate potions ----------------------------------------------------------------
-            potionChoice = randint(1, 3)
+            potionChoice = randint(1, 2)
 
             # defaults to '+ 10' health
             potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, 10)
 
             # generate potion
             if potionChoice == 1:
-                # strength potion
                 potion = StrengthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
                                         choice([3, 5, 10]))
 
             elif potionChoice == 2:
-                # health potion
                 potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
                                       choice([10, 20, 25]))
-
-            elif potionChoice == 3:
-                # jump potion
-                potion = JumpPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
-                                    randint(5, 10))
 
             # appends upgrade chest to list ---------------------------------------------------
             chests.append(UpgradeChest(self.platforms[-1], potion))
@@ -4811,6 +4710,8 @@ class Level(object):
         """ Responsible for drawing, generating, and deleting the platforms, as well has the weapon cooldown
 
         Parameters:
+            playerToCheck: Player
+                The player whose weapon damages the enemy
 
 
         Return => None
@@ -5127,9 +5028,9 @@ class BossLevel(Level):
                         enemies.remove(enemy)
 
             # chance of a chest to spawn ------------------------------------------------------------------
-            chanceOfChest = randint(1, 5)
+            chanceOfChest = randint(1, 3)
 
-            if chanceOfChest in [1, 2]:
+            if chanceOfChest == 1:
                 # Weapon generation
                 weapon = generateWeapon()
 
@@ -5158,23 +5059,19 @@ class BossLevel(Level):
                 )
 
             # generate potions ----------------------------------------------------------------
-            potionChoice = randint(1, 3)
+            potionChoice = randint(1, 2)
 
             # defaults to '+ 10' health
             potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, 10)
 
             # generate potion
             if potionChoice == 1:
-                # strength potion
-                potion = StrengthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, choice([3, 5, 10]))
+                potion = StrengthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
+                                        choice([3, 5, 10]))
 
             elif potionChoice == 2:
-                # health potion
-                potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, choice([10, 20, 25]))
-
-            elif potionChoice == 3:
-                # jump potion
-                potion = JumpPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y, randint(5, 10))
+                potion = HealthPotion(self.platforms[-1].x + self.platforms[-1].length / 2, self.platforms[-1].y,
+                                      choice([10, 20, 25]))
 
             # appends upgrade chest to list ---------------------------------------------------
             chests.append(UpgradeChest(self.platforms[-1], potion))
@@ -5335,6 +5232,7 @@ class BossLevel(Level):
 
                     grenade.exploded = True
 
+
             channel.unFlash()
 
     def drawInstructions(self) -> None:
@@ -5350,8 +5248,10 @@ class BossLevel(Level):
             if self.instructionAnimationStage < len(instructionStr) * 2:
                 self.instructionAnimationStage += 1
 
-            bossInstructions = instructionFont.render(instructionStr[:self.instructionAnimationStage // 2], False, WHITE)
-            instructionsWidth, instructionsHeight = instructionFont.size(instructionStr[:self.instructionAnimationStage // 2])
+            bossInstructions = instructionFont.render(instructionStr[:self.instructionAnimationStage // 2], False,
+                                                      WHITE)
+            instructionsWidth, instructionsHeight = instructionFont.size(
+                instructionStr[:self.instructionAnimationStage // 2])
             gameWindow.blit(bossInstructions, (WIDTH / 2 - instructionsWidth / 2, HEIGHT - 40 - instructionsHeight))
 
     def fireWeapon(self) -> None:
@@ -5394,7 +5294,7 @@ class BossLevel(Level):
         if self.stage == self.MISSILE_STAGE and self.health <= self.healthBreakpoint:
             self.healthBreakpoint -= 250
             self.stage = self.ENEMY_STAGE
-            self.enemiesToGenerate = randint(2, 8)
+            self.enemiesToGenerate = randint(8, 16)
 
         if self.stage == self.ENEMY_STAGE and self.enemiesToGenerate <= 0:
             self.stage = self.LASER_STAGE
@@ -5448,7 +5348,7 @@ def moveBackground(rate: float) -> None:
 
 ## Enemy-related functions ####################################
 def drawEnemies() -> None:
-    """ Draws all the enemies - a "helper" function
+    """ Draws all the enemies
 
     Parameters:
 
@@ -5460,7 +5360,7 @@ def drawEnemies() -> None:
 
 
 def moveEnemies() -> None:
-    """ Moves all the enemies - a "helper" function
+    """ Moves all the enemies
 
     Parameters:
 
@@ -5472,7 +5372,7 @@ def moveEnemies() -> None:
 
 
 def deleteEnemies() -> None:
-    """ Deletes enemies if their health is <= 0 and their death animation is over - a "helper" function
+    """ Deletes enemies if their health is <= 0 and their death animation is over
 
     Parameters:
 
@@ -5486,7 +5386,7 @@ def deleteEnemies() -> None:
 
 
 def checkEnemyAlive() -> None:
-    """ Checks if the enemy is alive or not - a "helper" function
+    """ Checks if the enemy is alive or not
 
     Parameters:
 
@@ -5499,7 +5399,7 @@ def checkEnemyAlive() -> None:
 
 ## Bullet-related functions ###################################
 def moveBullets() -> None:
-    """ Moves all bullets according to their speed - a "helper" function
+    """ Moves all bullets according to their speed
 
     Parameters:
 
@@ -5511,7 +5411,7 @@ def moveBullets() -> None:
 
 
 def drawBullets() -> None:
-    """ Draws bullets - a "helper" function
+    """ Draws bullets
 
     Parameters:
 
@@ -5524,7 +5424,7 @@ def drawBullets() -> None:
 
 ## Grenade-related functions ##################################
 def drawGrenades() -> None:
-    """ Draws grenade - a "helper" function
+    """ Draws grenade
 
     Parameters:
 
@@ -5536,7 +5436,7 @@ def drawGrenades() -> None:
 
 
 def moveGrenades() -> None:
-    """ Draws grenades - a "helper" function
+    """ Draws grenades
 
     Parameters:
 
@@ -5549,7 +5449,7 @@ def moveGrenades() -> None:
 
 ## Chest-related functions ####################################
 def drawChests() -> None:
-    """ Draws chests - a "helper" function
+    """ Draws chests
 
     Parameters:
 
@@ -5562,7 +5462,7 @@ def drawChests() -> None:
 
 ## Collectible-related functions ##############################
 def drawCollectibles() -> None:
-    """ Draws collectibles - a "helper" function
+    """ Draws collectibles
 
     Parameters:
 
@@ -5575,7 +5475,7 @@ def drawCollectibles() -> None:
 
 ## Portal-related functions ###################################
 def drawPortals() -> None:
-    """ Draws portals - a "helper" function
+    """ Draws portals
 
     Parameters:
 
@@ -5599,14 +5499,12 @@ def generateLevel(playerList: list[Player]) -> Level:
 
     global levelNumber, levelTransition
 
-    # checks if either player collide with the portal
     for playerToCheck in playerList:
-        # the transition form level 5 to 6 - the player "falls" into the underworld
         if playerToCheck.checkPortalEnter(portals) and levelNumber == 5:
             levelTransition = True
 
-        # resets level
         if playerToCheck.checkPortalEnter(portals) and not levelTransition:
+
             portalEnter.play()
             chests.clear()
             portals.clear()
@@ -5627,6 +5525,7 @@ def generateLevel(playerList: list[Player]) -> Level:
                 # resets acceleration
                 play.accelerationX = 0.25
 
+
             # increments level number
             levelNumber += 1
             levelTransition = False
@@ -5637,8 +5536,8 @@ def generateLevel(playerList: list[Player]) -> Level:
                     play.currentWeapon = Pistol()
                     play.health = 100
 
-            # set the background image
             levelBackgroundImage = backgroundImage
+
 
             # sets background based on level number
             if 6 <= levelNumber <= 10:
@@ -5649,8 +5548,7 @@ def generateLevel(playerList: list[Player]) -> Level:
                 playerToCheck.accelerationX = 0.15
                 levelBackgroundImage = iceBackgroundImage
 
-            # generates the new level with a new number of platforms
-            platformNum = levelNumber * 2 + 5
+            platformNum = levelNumber * 5 + 5
             if platformNum > MAX_PLATFORMS:
                 platformNum = MAX_PLATFORMS
 
@@ -5701,14 +5599,13 @@ def generateLevel(playerList: list[Player]) -> Level:
 
                 return Level(platformNum, underworldBackgroundImage)
 
-    # otherwise returns the current level
     return level
+
 
 
 ## Weapon generation ##########################################
 def generateWeapon() -> Gun:
     """ Generates a weapon using the choice() function from the random module.
-        uses the weapons dictionary to generate weapons
 
     Parameters:
 
@@ -5722,16 +5619,14 @@ def generateWeapon() -> Gun:
     # forcing the 'default' type if 'levelNumber' is smaller than 6
     if levelNumber < 6:
         weaponType = list(weapons.keys())[0]
-
     elif levelNumber < 11:
         weaponType = choice([list(weapons.keys())[0], list(weapons.keys())[1]])
-
     elif levelNumber < 16:
         weaponType = choice([list(weapons.keys())[1], list(weapons.keys())[2]])
 
     weapon = choice(weapons[weaponType])
 
-    return weapon
+    return SubMachineGun()
 
 
 ###############################################################################
@@ -5752,12 +5647,11 @@ def checkBulletCollision(playerToCheck: Player) -> None:
     # nested loop to check every bullet and enemy ---------------------------------------------------------------------
     for bullet in bullets:
         for enemy in enemies:
-            # for staffs, which target the closest enemy - a vertica hitbox spanning the height of the screen
+            # for staffs, which target the closest enemy
             enemyLargeHitbox = pygame.Rect(enemy.x, 0, enemy.enemySizeX, HEIGHT)
-            # damages enemy if the enemy is not already damaged(invincible) and the bullet is not an icicle/lightning/enemyLaser
             if enemy.hitbox.colliderect(bullet.hitbox) and not enemy.damaged and not enemy.isDead and not isinstance(bullet, Icicle) and not isinstance(bullet, Lightning) and not isinstance(bullet, EnemyLaser):
+                # damages enemy if the enemy is not already damaged(invincible) and the bullet is not an icicle
 
-                # lowers the sound of the enemy being hit when the bullet is an instace of 'Flame'
                 if isinstance(bullet, Flame):
                     enemyHitSound.set_volume(0.05)
                 else:
@@ -5770,7 +5664,6 @@ def checkBulletCollision(playerToCheck: Player) -> None:
                 if bullet in bullets and not isinstance(bullet, LaserBullet) and not isinstance(bullet, LaserBeam) and not enemy.isDead:
                     bullets.remove(bullet)
 
-            # starts the lightning explosion animation
             if enemyLargeHitbox.colliderect(bullet.hitbox) and isinstance(bullet, Lightning):
                 bullet.y = enemy.y + enemy.enemySizeY / 2
                 enemy.takeDamage(bullet.damage)
@@ -5925,6 +5818,7 @@ def redrawEnemies() -> None:
     deleteEnemies()
     
 
+
 def checkEnemyInvincibilityCooldown(playerToCheck: Player) -> None:
     """ Makes sure that the collision cooldown is used - makes the enmy invicible for a short duration
 
@@ -5943,6 +5837,8 @@ def checkEnemyInvincibilityCooldown(playerToCheck: Player) -> None:
 
         if (timeElapsed - enemy.timeHit) >= 0.25:
             enemy.damaged = False
+
+
 
 
 def redrawBullets() -> None:
@@ -6163,21 +6059,23 @@ def drawInstructions() -> None:
 
     Return => None
     """
-    global tutorialLettersToRender, instructionsIndex, timeOfFinishedWriting
+    global tutorialLettersToRender, instructionNum, timeOfFinishedWriting
 
     # rendering
-    drawInstruction(instructions[instructionsIndex], tutorialLettersToRender // 2, WHITE)
+    drawInstruction(instructions[instructionNum], tutorialLettersToRender // 2, WHITE)
 
     # typed-out animation
-    if tutorialLettersToRender < len(instructions[instructionsIndex]) * 2:
+    if tutorialLettersToRender < len(instructions[instructionNum]) * 2:
         tutorialLettersToRender += 1
         timeOfFinishedWriting = timeElapsed
 
     # flipping to next instructions
     elif timeElapsed - timeOfFinishedWriting >= 2:
-        instructionsIndex += 1
+        instructionNum += 1
         tutorialLettersToRender = 0
     
+        
+
 
 def drawWeaponUnlock():
     global weaponUnlockLettersToRender, weaponUnlockMessage, timeOfFinishedWriting
@@ -6188,7 +6086,6 @@ def drawWeaponUnlock():
     if weaponUnlockLettersToRender < len(weaponUnlockMessage) * 2:
         weaponUnlockLettersToRender += 1
         timeOfFinishedWriting = timeElapsed
-
 
 def drawMiscWeaponUnlock():
     global weaponUnlockMiscLettersToRender, weaponUnlockMessageMisc, timeOfFinishedWriting
@@ -6240,7 +6137,7 @@ def drawGUI(playerList: list[Player]) -> None:
 
     drawCoinDisplay()
     # only draws instructions if the level is the tutorial level and its not finished drawing
-    if instructionsIndex < len(instructions) and levelNumber == 0:
+    if instructionNum < len(instructions):
         drawInstructions()
 
     # only draws weapon unlock message if the level is 6 and total amount of platforms generated is less than 8
@@ -6249,7 +6146,6 @@ def drawGUI(playerList: list[Player]) -> None:
 
     if levelNumber == 11 and level.numOfPlatforms < 8:
         drawMiscWeaponUnlock()
-
 
 def checkQuit() -> bool:
     """ Checks if the ESCAPE or QUIT button has been pressed, and returns True if so
@@ -6266,8 +6162,6 @@ def checkQuit() -> bool:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return True
-
-    # returns false otherwise
     return False
 
 
@@ -6389,13 +6283,13 @@ players = [
     Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, Pistol(), False, "p2"),
 ]
 
-# lists for storing related objects
-enemies = []  # enemies
-collectibles = []  # collectible - coins, potions
-bullets = []  # bullets
-grenades = []  # projectiles that are explosives
-chests = []  # weapon and upgrade chests
-portals = []  # portals
+# lists
+enemies = []
+collectibles = []
+bullets = []
+grenades = []
+chests = []
+portals = []
 
 # coins collected
 coinsCollected = 0
@@ -6405,7 +6299,6 @@ level = Level(8)
 
 # Level number - 0 is tutorial
 levelNumber = 0
-
 # if the player if transitioning between levels
 levelTransition = False
 
@@ -6413,7 +6306,7 @@ levelTransition = False
 MAX_PLATFORMS = 100
 
 # cost of a potion from an upgrade chest
-POTION_COST = 5
+POTION_COST = 10
 
 # the time that a chest is opened - allows a cooldown
 timeOpened = 0
@@ -6456,18 +6349,14 @@ titleLettersToRender = 0
 timeSelected = 0
 
 ## Instructions Variables ##
-tutorialLettersToRender = 0  # the letters to render - for a 'typed-out' animation
-instructionsIndex = 0
+tutorialLettersToRender = 0
+instructionNum = 0
 timeOfFinishedWriting = 0
-
-# instructions to write on the tutorial level
 instructions = ["press [a] and [d]/[<] and [>] to move", "press [w]/[^] to jump", "press [space]/[/] to shoot",
-                "press [s]/[.] to pick up weapons", "YOUR WEAPON WILL BE RESET", "AFTER THIS LEVEL"]
+                "press [s]/[.] to pick up weapons"]
 # laser weapon unlock
 weaponUnlockLettersToRender = 0
 weaponUnlockMessage = "laser weapons unlocked"
-
-# more weapons unlocked
 weaponUnlockMiscLettersToRender = 0
 weaponUnlockMessageMisc = "more weapons unlocked"
 
@@ -6480,11 +6369,11 @@ timeOfPause = 0
 #
 ###############################################################################
 # loop control variables
-inPlay = True  # in the game + restart loop
-inMenu = True  # in the menu loop
-inGame = True  # in the game loop
-endScreen = False  # the endscreen menu
-paused = False  # if the game is paused
+inPlay = True
+inMenu = True
+inGame = True
+endScreen = False
+paused = False
 drawPausedImage = False
 
 # loading menu soundtrack
@@ -6535,34 +6424,20 @@ while inMenu:
     multiplayerTextWidth, multiplayerTextHeight = smallHeadingFont.size("2 players")
 
     # setting hitbox for play button ----------------------------------
-    # the hitbox needed for the "dropdown" menu to select single/multiplayer
     playHoverHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108, playTextWidth, playTextHeight + singlePlayerTextHeight + multiplayerTextHeight + 60)
-
-    # the hitbox for the play button - to start the game
     playHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108, playTextWidth, playTextHeight)
-
-    # the hitbox for the single player hitbox
     singlePlayerHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + 30, singlePlayerTextWidth, singlePlayerTextHeight)
-
-    # the hitbox for multiplayer hitbox
     multiplayerHitbox = pygame.Rect(WIDTH / 2 - playTextWidth / 2, titleHeight + HEIGHT * 41 / 108 + playTextHeight + singlePlayerTextHeight + 50, multiplayerTextWidth, multiplayerTextHeight)
 
-    # rendering the text and text shadow based on the selected number of player
     if numOfPlayers == 1:
-        # inverting colours
-        singlePlayerText = smallHeadingFont.render(">1 player<", False, WHITE)
-        singlePlayerTextShadow = smallHeadingFont.render(">1 player<", False, BLACK)
-
-        # adding "><" around the selected option
-        singlePlayerTextWidth, singlePlayerTextHeight = smallHeadingFont.size(">1 player<")
+        singlePlayerText = smallHeadingFont.render(">1 player", False, WHITE)
+        singlePlayerTextShadow = smallHeadingFont.render(">1 player", False, BLACK)
+        singlePlayerTextWidth, singlePlayerTextHeight = smallHeadingFont.size(">1 player")
 
     elif numOfPlayers == 2:
-        # inverting colours
-        multiplayerText = smallHeadingFont.render(">2 players<", False, WHITE)
-        multiplayerTextShadow = smallHeadingFont.render(">2 players<", False, BLACK)
-
-        # adding "><" around the selected option
-        multiplayerTextWidth, multiplayerTextHeight = smallHeadingFont.size(">2 players<")
+        multiplayerText = smallHeadingFont.render(">2 players", False, WHITE)
+        multiplayerTextShadow = smallHeadingFont.render(">2 players", False, BLACK)
+        multiplayerTextWidth, multiplayerTextHeight = smallHeadingFont.size(">2 players")
 
     # makes the text white upon hover ---------------------------------
     if playHoverHitbox.collidepoint(mousePos):
@@ -6571,6 +6446,7 @@ while inMenu:
             numOfPlayers = 1
             menuSelect.play()
             timeSelected = timeElapsed
+
 
         if multiplayerHitbox.collidepoint(mousePos) and mouseClicked and timeElapsed - timeSelected >= 0.25:
             numOfPlayers = 2
@@ -6590,7 +6466,7 @@ while inMenu:
         menuSelect.play()
         inMenu = False
 
-    # line decorations near the title ---------------------------------
+    # line decorations ------------------------------------------------
     pygame.draw.line(gameWindow, WHITE, (WIDTH / 2 - titleWidth / 2, 40), (WIDTH / 2 + titleWidth / 2, 40))
     pygame.draw.line(gameWindow, WHITE, (WIDTH / 2 - titleWidth / 2, 36), (WIDTH / 2 + titleWidth / 2, 36))
     pygame.draw.line(gameWindow, WHITE, (WIDTH / 2 - titleWidth / 2, 40 + titleHeight + 8),
@@ -6629,7 +6505,7 @@ while inMenu:
 
 # generates the correct number of players
 players = [
-    Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, PlasmaCannon(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
+    Player(100, 0.25, 5, 2.75, 15, 250, HEIGHT // 2 - 120, Pistol(), i % 2 == 1, f"p{i}") for i in range(1, numOfPlayers + 1)
 ]
 
 timeElapsed = 0
@@ -6637,7 +6513,6 @@ timeElapsed = 0
 #######################################################################################################################
 #
 # Main Loop: Game Loop + Restart Menu
-#
 #
 #######################################################################################################################
 while inGame:
